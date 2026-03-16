@@ -15,7 +15,9 @@ import { AboutPage } from './pages/AboutPage';
 import { CitizenDashboard } from './pages/CitizenDashboard';
 import { PoliticianDashboard } from './pages/PoliticianDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { ModeratorDashboard } from './pages/ModeratorDashboard';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
+import { OnboardingPage } from './pages/OnboardingPage';
 
 function App() {
   return (
@@ -27,7 +29,8 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/*" element={<RegisterPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/about" element={<AboutPage />} />
           </Route>
 
@@ -35,6 +38,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="citizen" element={<CitizenDashboard />} />
             <Route path="politician" element={<PoliticianDashboard />} />
+            <Route path="moderator" element={<ModeratorDashboard />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
             
