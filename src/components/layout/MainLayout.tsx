@@ -2,13 +2,15 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useAuth } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
+import { RoleSelectionModal } from '../auth/RoleSelectionModal';
 
 export function MainLayout() {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,9 +83,13 @@ export function MainLayout() {
                   <SignInButton mode="modal">
                     <Button variant="ghost" className="font-bold uppercase tracking-widest text-[10px] px-4 cursor-pointer hover:bg-white/5">Login</Button>
                   </SignInButton>
-                  <SignUpButton mode="modal">
-                    <Button size="sm" className="font-bold uppercase tracking-widest text-[10px] px-6 cursor-pointer bg-white text-black hover:bg-zinc-200 rounded-full h-9">Join Now</Button>
-                  </SignUpButton>
+                  <Button 
+                    size="sm" 
+                    onClick={() => setIsRoleModalOpen(true)}
+                    className="font-bold uppercase tracking-widest text-[10px] px-6 cursor-pointer bg-white text-black hover:bg-zinc-200 rounded-full h-9"
+                  >
+                    Join Now
+                  </Button>
                 </SignedOut>
                 <SignedIn>
                   <Link to="/dashboard/citizen">
@@ -126,9 +132,15 @@ export function MainLayout() {
               <SignInButton mode="modal">
                 <Button variant="secondary" className="w-full text-lg h-14 rounded-2xl cursor-pointer">Login</Button>
               </SignInButton>
-              <SignUpButton mode="modal">
-                <Button className="w-full text-lg h-14 rounded-2xl cursor-pointer bg-white text-black">Join PrajaConnect</Button>
-              </SignUpButton>
+              <Button 
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setIsRoleModalOpen(true);
+                }}
+                className="w-full text-lg h-14 rounded-2xl cursor-pointer bg-white text-black"
+              >
+                Join PrajaConnect
+              </Button>
             </SignedOut>
             <SignedIn>
               <Link to="/dashboard/citizen" className="w-full">
@@ -183,6 +195,10 @@ export function MainLayout() {
           </div>
         </div>
       </footer>
+      <RoleSelectionModal 
+        isOpen={isRoleModalOpen} 
+        onClose={() => setIsRoleModalOpen(false)} 
+      />
     </div>
   );
 }
