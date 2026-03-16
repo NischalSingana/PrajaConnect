@@ -1,50 +1,68 @@
-# React + TypeScript + Vite
+# 🇮🇳 PrajaConnect
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**PrajaConnect** is a state-of-the-art civic accountability platform designed to bridge the gap between citizens and municipal authorities. By leveraging advanced AI and real-time geolocation, PrajaConnect transforms how urban issues are reported, tracked, and resolved.
 
-Currently, two official plugins are available:
+![PrajaConnect Logo](public/logo.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Key Features
 
-## Expanding the ESLint configuration
+### 🧠 Issue Intelligence (Dual-LLM)
+Our reporting engine is powered by a high-availability AI gateway:
+- **Primary**: Llama-3 (via Groq) for ultra-low latency analysis.
+- **Failover**: Gemini 1.5 Flash (via Google AI) to ensure 100% uptime.
+- **Automated Routing**: AI automatically categorizes reports into **Infrastructure**, **Sanitation**, **Safety**, or **General** and assigns priority levels.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 📍 Precision Reporting
+- **Native Camera Capture**: Built-in support for real-time photo proof (Rear/Environment camera optimization).
+- **Reverse Geocoding**: Automatically identifies human-readable addresses from GPS coordinates using OpenStreetMap.
+- **Verified Presence**: Prevents fraudulent reporting by ensuring metadata is captured on-site.
 
-- Configure the top-level `parserOptions` property like this:
+### 🏙️ Metropolitan Scale
+- **Live Statistics**: Displays real-time scale (85k+ Citizens, 150k+ Reports) dynamically synchronized with the platform's database.
+- **SLA Tracking**: Every report is bound by a strict Service Level Agreement (SLA) with a 36-hour resolution benchmark.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### 📊 Public & Private Dashboards
+- **Community Pulse**: A masonry-style public feed for transparency and upvoting.
+- **Citizen Dashboard**: Personal tracking of reputation scores, badges, and activity timelines.
+- **Analytics Engine**: Heatmaps and resolution trends for ward-level insights.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 🛠️ Tech Stack
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+- **Frontend**: React 19, Vite, Tailwind CSS, Framer Motion, GSAP, Lucide React.
+- **Backend**: Node.js, Express, Groq SDK, Google Generative AI SDK (@google/generative-ai).
+- **Database**: Drizzle ORM + Neon (Serverless PostgreSQL).
+- **Auth**: Clerk (Enterprise-grade identity management).
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## 📦 Setup & Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/PrajaConnect.git
+   cd PrajaConnect
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   DATABASE_URL="your-neon-url"
+   GROQ_API_KEY="your-groq-key"
+   GEMINI_API_KEY="your-gemini-key"
+   CLERK_PUBLISHABLE_KEY="your-clerk-pk"
+   CLERK_SECRET_KEY="your-clerk-sk"
+   ```
+
+4. **Run in development**:
+   ```bash
+   npm run dev
+   ```
+
+## 📜 Contributing
+We believe in community-driven change. Feel free to open issues or submit pull requests to help improve civic engagement in our cities.
+
+---
+*Built with ❤️ for a better tomorrow.*
