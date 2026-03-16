@@ -45,6 +45,7 @@ export const issues = pgTable('issues', {
   escalationLevel: text('escalation_level', { enum: ['Normal', 'Level 1', 'Level 2', 'Critical'] }).notNull().default('Normal'),
   
   isPetition: boolean('is_petition').notNull().default(false),
+  imageUrl: text('image_url'),
   upvotes: integer('upvotes').notNull().default(0),
   petitionTarget: integer('petition_target'),
   commentsCount: integer('comments_count').notNull().default(0),
