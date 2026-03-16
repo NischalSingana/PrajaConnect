@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/Input';
-import { Search, Filter, ThumbsUp, Share2, MapPin, PlusCircle, TrendingUp, Clock, CheckCircle2 } from 'lucide-react';
+import { Search, ThumbsUp, Share2, MapPin, PlusCircle, TrendingUp, Clock, CheckCircle2, Globe } from 'lucide-react';
 import { SlaBadge } from '../components/ui/SlaBadge';
 import { PetitionProgress } from '../components/ui/PetitionProgress';
 import { ReportIssueModal } from '../components/issues/ReportIssueModal';
@@ -33,10 +31,31 @@ export function PublicIssueFeed() {
   const [activeTab, setActiveTab] = useState('Trending');
   const [activeFilter, setActiveFilter] = useState('All');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredIssues = issues.filter(issue => 
-    activeFilter === 'All' ? true : issue.category === activeFilter
-  );
+  const filteredIssues = issues
+    .filter(issue => {
+      // Case-insensitive category match
+      const matchesFilter = activeFilter === 'All' 
+        ? true 
+        : issue.category.toLowerCase() === activeFilter.toLowerCase();
+
+      const matchesSearch = 
+        issue.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        issue.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.location.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesTab = activeTab === 'Resolved' ? issue.status === 'Resolved' : true;
+
+      return matchesFilter && matchesSearch && matchesTab;
+    })
+    .sort((a, b) => {
+      if (activeTab === 'Trending') {
+        return b.upvotes - a.upvotes;
+      }
+      // Default to recent for everything else
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   const tabs = [
     { name: 'Trending', icon: <TrendingUp className="h-4 w-4" /> },
@@ -45,24 +64,26 @@ export function PublicIssueFeed() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 pb-32 pt-10">
+    <div className="max-w-6xl mx-auto space-y-12 pb-32 pt-10 px-6">
       <ReportIssueModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
       
       {/* Professional Header */}
-      <div className="relative p-12 rounded-3xl overflow-hidden border border-white/5 bg-zinc-950/50 backdrop-blur-xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/5 blur-[100px] rounded-full -mr-48 -mt-48" />
+      <div className="relative p-12 rounded-[2.5rem] overflow-hidden border border-white/[0.03] bg-[#050505] shadow-2xl">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -mr-64 -mt-64" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-          <div className="space-y-4">
-            <Badge variant="outline" className="px-4 py-1 border-indigo-500/30 text-indigo-300">Community Feed</Badge>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Public <span className="text-indigo-400">Issues</span></h1>
-            <p className="text-zinc-500 text-lg font-medium max-w-xl leading-relaxed">
-              Track resolution progress, support community petitions, and help drive positive change in your neighborhood.
+          <div className="space-y-6">
+            <div className="hero-text inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <Globe className="h-3 w-3" /> Live Community Pulse
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white">Public <span className="bg-gradient-primary bg-clip-text text-transparent">Issues.</span></h1>
+            <p className="text-zinc-500 text-lg font-medium max-w-2xl leading-relaxed">
+              Real-time monitoring of community challenges and municipal resolution. Join thousands of citizens driving accountability.
             </p>
           </div>
           <Button 
             size="lg" 
             onClick={() => setIsReportModalOpen(true)} 
-            className="md:w-auto w-full bg-indigo-600 hover:bg-indigo-500 text-white border-none shadow-indigo-500/20 shadow-lg"
+            className="md:w-auto w-full bg-white text-black hover:bg-zinc-200 border-none shadow-2xl rounded-full h-14 px-8 text-sm font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
           >
             <PlusCircle className="mr-2 h-5 w-5" /> Report Issue
           </Button>
@@ -70,25 +91,28 @@ export function PublicIssueFeed() {
       </div>
 
       {/* Control Bar */}
-      <div className="sticky top-24 z-40 space-y-6">
-        <div className="flex flex-col lg:flex-row gap-4 p-3 rounded-2xl bg-zinc-950/80 backdrop-blur-2xl border border-white/5 shadow-2xl">
+      <div className="space-y-6">
+        <div className="sticky top-24 z-40 flex flex-col lg:flex-row gap-4 p-4 rounded-3xl bg-zinc-950/80 backdrop-blur-3xl border border-white/[0.03] shadow-2xl">
           <div className="relative flex-1">
-            <Input 
-              icon={<Search className="h-4 w-4" />} 
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <input 
+              type="text"
               placeholder="Search issues, locations, or tags..." 
-              className="bg-white/5 border-white/5 h-12 rounded-xl"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/[0.03] border border-white/[0.05] h-14 rounded-2xl pl-12 pr-4 text-sm font-medium text-white placeholder:text-zinc-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
             />
           </div>
           
-          <div className="flex gap-1 p-1 rounded-xl bg-white/5 border border-white/5">
+          <div className="flex gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
             {tabs.map(tab => (
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-2 rounded-lg transition-all duration-300 font-bold uppercase tracking-wider text-[10px]",
+                  "flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all duration-300 font-bold uppercase tracking-widest text-[10px]",
                   activeTab === tab.name 
-                    ? "bg-white text-black" 
+                    ? "bg-white text-black shadow-lg" 
                     : "text-zinc-500 hover:text-white"
                 )}
               >
@@ -96,23 +120,19 @@ export function PublicIssueFeed() {
               </button>
             ))}
           </div>
-          
-          <Button variant="outline" className="h-12 rounded-xl border-white/10 font-bold uppercase tracking-widest text-[10px] px-6">
-            <Filter className="mr-2 h-4 w-4" /> Filters
-          </Button>
         </div>
 
         {/* Category Pills */}
-        <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar px-1">
+        <div className="flex gap-3 overflow-x-auto pb-4 hide-scrollbar px-1">
           {FILTERS.map(filter => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}
               className={cn(
-                "whitespace-nowrap px-5 py-2 rounded-full border text-xs font-bold transition-all duration-300",
+                "whitespace-nowrap px-6 py-2.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all duration-300",
                 activeFilter === filter 
-                  ? "border-indigo-500/50 bg-indigo-500/10 text-indigo-300" 
-                  : "border-white/5 bg-white/5 text-zinc-500 hover:border-white/10 hover:text-white"
+                  ? "border-indigo-500/30 bg-indigo-500/10 text-indigo-400 shadow-lg shadow-indigo-500/5 scale-105" 
+                  : "border-white/[0.05] bg-white/[0.02] text-zinc-500 hover:border-white/10 hover:text-white"
               )}
             >
               {filter}
@@ -121,82 +141,137 @@ export function PublicIssueFeed() {
         </div>
       </div>
 
-      {/* Issue Cards */}
-      <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 gap-6 px-1">
-        <AnimatePresence mode="popLayout">
-          {filteredIssues.map((issue) => (
-            <motion.div key={issue.id} variants={item} layout exit={{ opacity: 0, scale: 0.98 }}>
-              <Card className="p-0 border-white/5 bg-zinc-950/30 flex flex-col md:flex-row overflow-hidden group rounded-2xl">
-                <div className={cn(
-                  "w-1 md:w-1.5 self-stretch",
-                  issue.status === 'Resolved' ? "bg-emerald-500" : issue.status === 'In Progress' ? "bg-amber-500" : "bg-zinc-800"
-                )} />
-                
-                <div className="p-8 flex-1 space-y-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <Badge className={cn(
-                        "text-[9px] px-3 font-bold uppercase border-none",
-                        issue.status === 'Resolved' ? "bg-emerald-500/10 text-emerald-500" : 
-                        issue.status === 'In Progress' ? "bg-amber-500/10 text-amber-500" : "bg-white/5 text-zinc-400"
-                      )}>
-                        {issue.status}
-                      </Badge>
-                      <span className="text-zinc-600 font-bold tracking-widest text-[9px] uppercase">
-                        {issue.category} • {issue.id}
-                      </span>
-                    </div>
-                    <SlaBadge deadlineIso={issue.slaDeadline} status={issue.status} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors duration-300">{issue.title}</h2>
-                    <p className="text-zinc-500 text-base font-medium leading-relaxed line-clamp-2">
-                      {issue.description}
-                    </p>
-                  </div>
-
-                  {issue.isPetition && issue.petitionTarget && (
-                    <div className="p-6 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
-                      <div className="flex items-center gap-2 mb-3">
-                         <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Active Community Petition</span>
-                      </div>
-                      <PetitionProgress currentSignatures={issue.upvotes} target={issue.petitionTarget} />
+      {/* Issue Cards - Masonry Layout */}
+      {filteredIssues.length > 0 ? (
+        <motion.div 
+          variants={container} 
+          initial="hidden" 
+          animate="show" 
+          className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 px-1"
+        >
+          <AnimatePresence mode="popLayout">
+            {filteredIssues.map((issue) => (
+              <motion.div 
+                key={issue.id} 
+                variants={item} 
+                layout 
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="break-inside-avoid mb-8"
+              >
+                <Card className="p-0 border-white/[0.03] bg-[#08080a] flex flex-col overflow-hidden group rounded-[2.5rem] hover:border-white/10 transition-all duration-500 relative shadow-2xl">
+                  {/* Status Indicator Bar */}
+                  <div className={cn(
+                    "h-1.5 w-full",
+                    issue.status === 'Resolved' ? "bg-emerald-500" : issue.status === 'In Progress' ? "bg-amber-500" : "bg-zinc-800"
+                  )} />
+                  
+                  {/* Issue Image Preview */}
+                  {issue.imageUrl && (
+                    <div className="relative h-48 w-full overflow-hidden border-b border-white/[0.03]">
+                      <img 
+                        src={issue.imageUrl} 
+                        alt={issue.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#08080a] to-transparent opacity-60" />
                     </div>
                   )}
 
-                  <div className="flex flex-wrap items-center justify-between gap-6 pt-6 border-t border-white/5">
-                    <div className="flex items-center gap-8">
-                      <div className="flex items-center gap-2 text-zinc-500">
-                        <MapPin className="h-4 w-4 text-indigo-500/50" />
-                        <span className="text-xs font-bold uppercase tracking-wider">{issue.location}</span>
+                  <div className="p-8 space-y-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-zinc-600 font-bold tracking-widest text-[9px] uppercase">
+                          {issue.category} • {issue.id.slice(0, 8)}
+                        </span>
+                        <div className="flex items-center gap-2">
+                           <div className={cn("h-1.5 w-1.5 rounded-full", 
+                             issue.status === 'Resolved' ? "bg-emerald-500" : 
+                             issue.status === 'In Progress' ? "bg-amber-500" : "bg-zinc-600"
+                           )} />
+                           <span className={cn("text-[10px] font-bold uppercase tracking-widest",
+                             issue.status === 'Resolved' ? "text-emerald-500" : 
+                             issue.status === 'In Progress' ? "text-amber-500" : "text-zinc-500"
+                           )}>{issue.status}</span>
+                        </div>
                       </div>
-                      <div className="hidden sm:flex items-center gap-2 text-zinc-600 font-bold uppercase tracking-wider text-[10px]">
-                        {new Date(issue.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
+                      <SlaBadge deadlineIso={issue.slaDeadline} status={issue.status} />
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        className="rounded-xl h-11 px-5 border-white/5 bg-white/5 hover:bg-white/10"
-                        onClick={() => upvoteIssue(issue.id)}
-                      >
-                        <ThumbsUp className="mr-2 h-3.5 w-3.5" />
-                        <span className="text-xs font-bold">{issue.upvotes.toLocaleString()} Support</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl hover:bg-white/5 transition-all text-zinc-500 hover:text-white">
-                        <Share2 className="h-4 w-4" />
-                      </Button>
+                    <div className="space-y-3">
+                      <h2 className="text-xl font-bold text-white group-hover:text-indigo-400 transition-colors duration-500 leading-tight">
+                        {issue.title}
+                      </h2>
+                      <p className="text-zinc-500 text-sm font-medium leading-relaxed line-clamp-4">
+                        {issue.description}
+                      </p>
+                    </div>
+
+                    {issue.isPetition && issue.petitionTarget && (
+                      <div className="p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                        <div className="flex items-center gap-2 mb-3">
+                           <span className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Active Communities Petition</span>
+                        </div>
+                        <PetitionProgress currentSignatures={issue.upvotes} target={issue.petitionTarget} />
+                      </div>
+                    )}
+
+                    <div className="pt-6 border-t border-white/[0.03] space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-zinc-500">
+                          <MapPin className="h-3.5 w-3.5 text-indigo-500/50" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest truncate max-w-[120px]">
+                            {issue.location}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-zinc-600 font-bold uppercase tracking-widest text-[9px]">
+                          <Clock className="h-3.5 w-3.5 opacity-50" />
+                          {new Date(issue.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="secondary" 
+                          size="sm" 
+                          className="flex-1 rounded-xl h-10 px-4 border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.08] transition-all"
+                          onClick={() => upvoteIssue(issue.id)}
+                        >
+                          <ThumbsUp className="mr-2 h-3 w-3" />
+                          <span className="text-[10px] font-bold uppercase tracking-widest">{issue.upvotes.toLocaleString()} Support</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 transition-all text-zinc-500 hover:text-white">
+                          <Share2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+                </Card>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center py-32 space-y-6 text-center"
+        >
+          <div className="h-20 w-20 rounded-3xl bg-white/[0.02] border border-white/[0.05] flex items-center justify-center">
+            <Search className="h-10 w-10 text-zinc-700" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white">No issues found</h3>
+            <p className="text-zinc-500 max-w-xs mx-auto text-sm font-medium">Try adjusting your filters or search terms to find what you're looking for.</p>
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => { setActiveFilter('All'); setSearchQuery(''); setActiveTab('Trending'); }}
+            className="rounded-full border-white/10 text-xs font-bold uppercase tracking-widest px-8 hover:bg-white/5 transition-all"
+          >
+            Clear All Filters
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }
