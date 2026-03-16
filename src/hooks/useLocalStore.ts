@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { Issue, Notification, Citizen } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export function useLocalStore() {
   const { getToken, userId, isSignedIn } = useAuth();
@@ -10,17 +10,26 @@ export function useLocalStore() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<Citizen | null>(null);
+  const [stats, setStats] = useState<{ citizens: number; issues: number; resolved: number; avgResponseTime: string }>({
+    citizens: 0,
+    issues: 0,
+    resolved: 0,
+    avgResponseTime: '36h'
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch all data
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      // 1. Fetch public issues (doesn't require auth)
-      const issuesRes = await fetch(`${API_URL}/api/issues`);
-      if (issuesRes.ok) {
-        setIssues(await issuesRes.json());
-      }
+      // 1. Fetch public issues & stats (doesn't require auth)
+      const [issuesRes, statsRes] = await Promise.all([
+        fetch(`${API_URL}/api/issues`),
+        fetch(`${API_URL}/api/stats`)
+      ]);
+      
+      if (issuesRes.ok) setIssues(await issuesRes.json());
+      if (statsRes.ok) setStats(await statsRes.json());
 
       // 2. Fetch protected data if signed in
       if (isSignedIn) {
@@ -120,6 +129,7 @@ export function useLocalStore() {
     issues,
     notifications,
     user,
+    stats,
     isLoading,
     addIssue,
     upvoteIssue,
