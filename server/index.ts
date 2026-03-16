@@ -1,16 +1,16 @@
-import express, { Request, Response } from 'express';
-import cors from 'cors';
 import * as dotenv from 'dotenv';
 import path from 'path';
-import { db } from '../src/db/index.js';
-import { issues, users, notifications } from '../src/db/schema.js';
+// Ensure environment variables are loaded before any other imports
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import { db } from '../src/db/index';
+import { issues, users, notifications } from '../src/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { requireAuth } from '@clerk/express';
+import { requireAuth, clerkClient } from '@clerk/express';
 import Groq from 'groq-sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Ensure environment variables are loaded
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const app = express();
 app.use(cors());
@@ -197,6 +197,68 @@ app.get('/api/notifications', requireAuth(), async (req: Request, res: Response)
   } catch (error) {
     console.error('Error fetching notifications:', error);
     res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+// User Synchronization Endpoint
+app.post('/api/sync-user', async (req: Request, res: Response) => {
+  const { userId, email, name, role, avatar } = req.body;
+  
+  if (!userId || !role) {
+    return res.status(400).json({ error: 'User ID and Role are required' });
+  }
+
+  try {
+    console.log(`[SYNC] Processing user: ${userId} (${email}) | Role: ${role}`);
+
+    // 1. Sync to Database
+    const [existingUser] = await db.select().from(users).where(eq(users.id, userId));
+    
+    if (existingUser) {
+      console.log(`Updating existing user: ${userId}`);
+      await db.update(users)
+        .set({ name: name || existingUser.name, email: email || existingUser.email, role, avatar: avatar || existingUser.avatar })
+        .where(eq(users.id, userId));
+    } else {
+      console.log(`Inserting new user: ${userId}`);
+      if (!name || !email) {
+        throw new Error('Name and Email are required for new user creation');
+      }
+      await db.insert(users).values({
+        id: userId,
+        name,
+        email,
+        role: role as 'citizen' | 'politician' | 'admin' | 'moderator',
+        avatar,
+        createdAt: new Date(),
+      });
+    }
+
+    // 2. Update Clerk Metadata
+    try {
+      console.log(`Updating Clerk metadata for: ${userId}`);
+      await clerkClient.users.updateUserMetadata(userId, {
+        publicMetadata: {
+          role: role
+        }
+      });
+      console.log('Clerk metadata updated successfully');
+    } catch (metadataError) {
+      const msg = metadataError instanceof Error ? metadataError.message : String(metadataError);
+      console.warn('Failed to update Clerk metadata:', msg);
+      // We continue because the DB is synchronized
+    }
+    
+    res.json({ success: true, role });
+  } catch (error) {
+    console.error('CRITICAL: Sync User Error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : undefined;
+    res.status(500).json({ 
+      error: 'Failed to sync user data', 
+      details: message,
+      stack: process.env.NODE_ENV === 'development' ? stack : undefined
+    });
   }
 });
 
