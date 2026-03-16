@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Target, Users, Globe, Award, Heart, Shield, Zap, ArrowRight } from 'lucide-react';
+import { Target, Users, Globe, Award, Heart, Shield, Zap, ArrowRight, Scale, Activity } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { useLocalStore } from '@/hooks/useLocalStore';
+import { cn } from '@/lib/utils';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -165,6 +166,57 @@ export function AboutPage() {
                 </p>
               </Card>
             ))}
+          </div>
+        </section>
+
+        {/* System Roles */}
+        <section className="about-section space-y-12">
+          <div className="text-center space-y-4">
+             <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">Structured for Governance.</h2>
+             <p className="text-zinc-500 text-lg">Defined roles ensuring organized communication and accountability.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+             {[
+               {
+                 role: "Citizen",
+                 desc: "Can register, report local issues, provide feedback, track complaint status, and receive updates directly from politicians.",
+                 icon: <Users className="h-5 w-5 text-blue-400" />,
+                 border: "border-blue-500/10",
+                 bg: "bg-blue-500/5"
+               },
+               {
+                 role: "Politician",
+                 desc: "Can view citizen concerns within their constituency, respond to issues, post public updates, and engage in discussions to promote transparency.",
+                 icon: <Shield className="h-5 w-5 text-emerald-400" />,
+                 border: "border-emerald-500/10",
+                 bg: "bg-emerald-500/5"
+               },
+               {
+                 role: "Moderator",
+                 desc: "Monitors platform interactions, ensures respectful communication, resolves conflicts, and flags inappropriate content.",
+                 icon: <Scale className="h-5 w-5 text-amber-400" />,
+                 border: "border-amber-500/10",
+                 bg: "bg-amber-500/5"
+               },
+               {
+                 role: "Admin",
+                 desc: "Oversees overall platform operations, manages user roles, and ensures system integrity.",
+                 icon: <Activity className="h-5 w-5 text-indigo-400" />,
+                 border: "border-indigo-500/10",
+                 bg: "bg-indigo-500/5"
+               }
+             ].map((role) => (
+               <Card key={role.role} className={cn("p-8 border bg-zinc-950/50 hover:bg-zinc-900 transition-all group rounded-3xl", role.border)}>
+                 <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center mb-6", role.bg)}>
+                   {role.role === "Moderator" ? <Scale className="h-5 w-5 text-amber-400" /> : role.icon}
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-3 group-hover:text-indigo-400 transition-colors">{role.role}</h3>
+                 <p className="text-zinc-500 text-sm font-medium leading-relaxed">
+                   {role.desc}
+                 </p>
+               </Card>
+             ))}
           </div>
         </section>
 

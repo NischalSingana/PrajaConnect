@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
-import { Moon, Sun, Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4 } from 'lucide-react';
+import { Moon, Sun, Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useUser, UserButton } from '@clerk/clerk-react';
@@ -24,6 +24,10 @@ export function DashboardLayout() {
     { name: 'Public Feed', icon: Files, path: '/issues' },
     ...(role === 'politician' ? [
       { name: 'My District', icon: Activity, path: '/dashboard/politician/district' }
+    ] : []),
+    ...(role === 'moderator' ? [
+      { name: 'Review Queue', icon: Shield, path: '/dashboard/moderator' },
+      { name: 'Conflict Resolution', icon: Users, path: '/dashboard/moderator/conflicts' }
     ] : []),
     ...(role === 'admin' ? [
       { name: 'System Logs', icon: FileText, path: '/dashboard/admin/logs' },
