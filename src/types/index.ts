@@ -49,6 +49,9 @@ export interface Issue {
   petitionTarget?: number;
   
   commentsCount: number;
+  imageUrl?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface Notification {
