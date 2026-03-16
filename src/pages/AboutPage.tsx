@@ -4,6 +4,7 @@ import { Target, Users, Globe, Award, Heart, Shield, Zap, ArrowRight } from 'luc
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { useLocalStore } from '@/hooks/useLocalStore';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -12,6 +13,7 @@ gsap.registerPlugin(ScrollTrigger);
 const ABOUT_IMAGE = '/images/about_hero.png';
 
 export function AboutPage() {
+  const { stats } = useLocalStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -135,7 +137,7 @@ export function AboutPage() {
                          <Users className="h-8 w-8 text-indigo-400" />
                       </div>
                       <div>
-                        <p className="text-4xl font-bold text-white">85k+</p>
+                        <p className="text-4xl font-bold text-white">{stats.citizens.toLocaleString()}</p>
                         <p className="text-xs font-bold uppercase tracking-widest text-zinc-500 mt-1">Active Citizens</p>
                       </div>
                    </div>
@@ -197,11 +199,6 @@ export function AboutPage() {
 
         {/* Footer Links */}
         <footer className="about-section text-center pt-20 border-t border-white/5">
-           <div className="flex flex-wrap justify-center gap-10 text-xs font-bold uppercase tracking-widest text-zinc-500">
-              <a href="#" className="hover:text-white transition-colors">Documentation</a>
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Contact Us</a>
-           </div>
         </footer>
       </div>
     </div>

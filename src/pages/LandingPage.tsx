@@ -5,12 +5,17 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { HeroCanvas, FeaturesCanvas } from '../components/ui/HeroCanvas';
 import { Link } from 'react-router-dom';
+import { SignUpButton, useAuth } from '@clerk/clerk-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+import { useLocalStore } from '@/hooks/useLocalStore';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function LandingPage() {
+  const { stats } = useLocalStore();
+  const { isSignedIn } = useAuth();
   const containerRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
@@ -94,11 +99,26 @@ export function LandingPage() {
     return () => ctx.revert();
   }, []);
 
-  const stats = [
-    { label: "Active Citizens", value: "85k+", icon: <Users className="h-5 w-5 text-indigo-400" />, desc: "Across Telangana" },
-    { label: "Issues Resolved", value: "62k+", icon: <CheckCircle2 className="h-5 w-5 text-emerald-400" />, desc: "And counting" },
-    { label: "Avg. Resolution", value: "36h", icon: <BarChart3 className="h-5 w-5 text-violet-400" />, desc: "Response time" },
-    { label: "Cities Active", value: "12", icon: <Globe className="h-5 w-5 text-blue-400" />, desc: "Indian cities" },
+  const formatValue = (val: number | string, suffix: string = "+") => {
+    if (typeof val === 'string') return val;
+    if (val >= 1000) return `${(val / 1000).toFixed(0)}k${suffix}`;
+    return `${val}${suffix}`;
+  };
+
+  const statsList = [
+    { label: "Active Citizens", value: formatValue(stats.citizens), icon: <Users className="h-5 w-5 text-indigo-400" />, desc: "Real-time verification" },
+    { label: "Issues Resolved", value: formatValue(stats.resolved), icon: <CheckCircle2 className="h-5 w-5 text-emerald-400" />, desc: "Community results" },
+    { label: "Avg. Resolution", value: stats.avgResponseTime, icon: <BarChart3 className="h-5 w-5 text-violet-400" />, desc: "Audit Verified" },
+    { label: "Total Reports", value: formatValue(stats.issues), icon: <Globe className="h-5 w-5 text-blue-400" />, desc: "Citizens driving change" },
+  ];
+
+  const cities = [
+    { name: "Andhra Pradesh", icon: "/city_ap.png" },
+    { name: "Hyderabad", icon: "/city_hyd.png" },
+    { name: "Bangalore", icon: "/city_blr.png" },
+    { name: "Mumbai", icon: "/city_mum.png" },
+    { name: "Delhi", icon: "/city_del.png" },
+    { name: "Chennai", icon: "/city_chn.png" },
   ];
 
   const features = [
@@ -175,11 +195,19 @@ export function LandingPage() {
             </p>
             
             <div className="hero-text flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Link to="/register" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto h-14 px-10 bg-indigo-600 hover:bg-indigo-500 text-white border-none group shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-shadow">
-                  Get Started Free <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
+              {isSignedIn ? (
+                <Link to="/dashboard/citizen" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto h-14 px-10 bg-indigo-600 hover:bg-indigo-500 text-white border-none group shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-shadow">
+                    Go to Dashboard <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              ) : (
+                <SignUpButton mode="modal">
+                  <Button size="lg" className="w-full sm:w-auto h-14 px-10 bg-indigo-600 hover:bg-indigo-500 text-white border-none group shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-shadow cursor-pointer">
+                    Get Started Free <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </SignUpButton>
+              )}
               <Link to="/issues" className="w-full sm:w-auto">
                 <Button variant="secondary" size="lg" className="w-full sm:w-auto h-14 px-10 border-white/10 bg-white/5 text-white hover:bg-white/10">
                   Explore Live Feed
@@ -197,14 +225,28 @@ export function LandingPage() {
       </section>
 
       {/* ═══════════════════════════════════════════ */}
-      {/* SOCIAL PROOF BAR                            */}
+      {/* SOCIAL PROOF BAR / CITY SELECTION          */}
       {/* ═══════════════════════════════════════════ */}
-      <section className="py-12 border-y border-white/[0.03]">
+      <section className="py-20 border-y border-white/[0.03] bg-zinc-950/20">
         <div className="container mx-auto px-6">
-          <div className="flex flex-wrap items-center justify-center gap-x-16 gap-y-6 text-zinc-600">
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em]">Trusted by communities in</span>
-            {["Hyderabad", "Bangalore", "Mumbai", "Delhi", "Chennai", "Pune"].map(city => (
-              <span key={city} className="text-sm font-bold text-zinc-500 hover:text-white transition-colors cursor-default">{city}</span>
+          <div className="text-center mb-12">
+            <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-500">Trusted by communities in</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-20 gap-y-16">
+            {cities.map(city => (
+              <div key={city.name} className="flex flex-col items-center group cursor-pointer">
+                <div className="h-24 w-24 mb-6 relative overflow-hidden flex items-center justify-center">
+                  <div className="absolute inset-0 bg-indigo-500/0 group-hover:bg-indigo-500/10 rounded-full transition-all duration-500 blur-2xl" />
+                  <img 
+                    src={city.icon} 
+                    alt={city.name}
+                    className="h-20 w-auto object-contain brightness-[0.9] group-hover:brightness-100 group-hover:scale-110 transition-all duration-500 opacity-70 group-hover:opacity-100 mix-blend-screen"
+                  />
+                </div>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 group-hover:text-white transition-colors">
+                  {city.name}
+                </span>
+              </div>
             ))}
           </div>
         </div>
@@ -213,23 +255,22 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════ */}
       {/* STATS GRID                                  */}
       {/* ═══════════════════════════════════════════ */}
-      <section ref={statsRef} className="py-28 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-zinc-950/50 to-black" />
+      <section ref={statsRef} className="py-32 relative overflow-hidden bg-black">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.05),transparent_50%)]" />
         <div className="container relative z-10 mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="stat-card relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative p-8 rounded-3xl border border-white/[0.04] bg-white/[0.02] hover:border-white/10 transition-all backdrop-blur-sm">
-                  <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="h-14 w-14 rounded-2xl bg-white/[0.04] border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                      {stat.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-4xl font-bold text-white mb-1">{stat.value}</h3>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{stat.label}</p>
-                      <p className="text-[9px] text-zinc-700 mt-1">{stat.desc}</p>
-                    </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {statsList.map((stat) => (
+              <div key={stat.label} className="stat-card relative group h-full">
+                <div className="relative h-full p-10 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 backdrop-blur-xl flex flex-col items-center text-center justify-between">
+                  <div className="h-14 w-14 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 group-hover:border-indigo-500/30 group-hover:bg-indigo-500/10">
+                    {stat.icon}
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-5xl font-bold tracking-tight text-white">{stat.value}</h3>
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-indigo-400 transition-colors">{stat.label}</p>
+                  </div>
+                  <div className="mt-6 pt-6 border-t border-white/[0.03] w-full">
+                    <p className="text-[10px] font-bold text-zinc-600 group-hover:text-zinc-500">{stat.desc}</p>
                   </div>
                 </div>
               </div>
@@ -427,70 +468,49 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════ */}
       {/* FINAL CTA                                   */}
       {/* ═══════════════════════════════════════════ */}
-      <section className="py-32 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-indigo-950/5 to-black" />
-        
-        <div className="container relative z-10 mx-auto px-6">
+      <section className="py-32 relative overflow-hidden">
+        <div className="absolute inset-0 bg-indigo-600/5 blur-[120px] rounded-full -mb-64" />
+        <div className="container relative z-10 mx-auto px-6 text-center space-y-12">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
-            className="rounded-[2.5rem] p-16 md:p-28 text-center relative overflow-hidden border border-white/5 bg-zinc-950/30 backdrop-blur-xl"
+            className="space-y-10"
           >
-            {/* Animated glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-blue-600/5 blur-[120px] rounded-full pointer-events-none" />
-            
-            <div className="relative z-10 space-y-10">
-              <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-tight">
-                Ready to make your<br />
-                <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">city better?</span>
-              </h2>
-              <p className="text-xl text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                Join thousands of citizens already building more transparent and responsive communities. It takes less than a minute to get started.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Link to="/register">
-                  <Button size="lg" className="h-16 px-14 text-base bg-indigo-600 hover:bg-indigo-500 text-white border-none min-w-[220px] shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-all group">
-                    Create Free Account <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            <h2 className="text-4xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
+              JOIN THE FUTURE OF <br />
+              <span className="bg-gradient-primary bg-clip-text text-transparent italic uppercase">urban governance.</span>
+            </h2>
+            <p className="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto leading-relaxed font-medium">
+              Be part of a growing movement of citizens who believe in transparent, accountable, and swift civic resolution.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+              {!isSignedIn ? (
+                <SignUpButton mode="modal">
+                  <Button size="lg" className="h-16 px-14 text-sm font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 border-none min-w-[240px] shadow-2xl transition-all rounded-full group cursor-pointer">
+                    Create Account <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </SignUpButton>
+              ) : (
+                <Link to="/dashboard/citizen">
+                  <Button size="lg" className="h-16 px-14 text-sm font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 border-none min-w-[240px] shadow-2xl transition-all rounded-full group">
+                    Go to Dashboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/about">
-                  <Button variant="secondary" size="lg" className="h-16 px-14 text-base border-white/10 bg-white/5 text-white hover:bg-white/10 min-w-[220px]">
-                    Learn More
-                  </Button>
-                </Link>
-              </div>
-              <p className="text-xs text-zinc-600 font-medium">No credit card required · Free forever for citizens</p>
+              )}
+              <Link to="/about">
+                <Button variant="outline" size="lg" className="h-16 px-14 text-sm font-bold uppercase tracking-widest border-white/10 bg-white/5 text-white hover:bg-white/10 min-w-[240px] rounded-full">
+                  Our Vision
+                </Button>
+              </Link>
             </div>
+            <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest bg-white/5 inline-block px-4 py-1.5 rounded-full border border-white/5">
+              Free forever for citizens · Secure & Encrypted
+            </p>
           </motion.div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════════ */}
-      {/* FOOTER                                      */}
-      {/* ═══════════════════════════════════════════ */}
-      <footer className="py-16 border-t border-white/[0.03]">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-sm font-bold text-white">PrajaConnect</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-8 text-xs font-bold uppercase tracking-widest text-zinc-600">
-              <Link to="/about" className="hover:text-white transition-colors">About</Link>
-              <Link to="/issues" className="hover:text-white transition-colors">Issues</Link>
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Contact</a>
-            </div>
-            <p className="text-xs text-zinc-700">© 2026 PrajaConnect. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
