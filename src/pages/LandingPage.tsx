@@ -158,9 +158,9 @@ export function LandingPage() {
   ];
 
   const testimonials = [
-    { name: "Priya Sharma", role: "Resident, Kukatpally", text: "Reported a pothole near KPHB Colony. Within 48 hours, GHMC patched it. I've never seen such fast civic response in Hyderabad!", stars: 5 },
-    { name: "Corporator Ramesh Babu", role: "Ward 78, Kukatpally", text: "PrajaConnect transformed how I manage ward complaints. The SLA dashboard gives me complete visibility and residents trust me more now.", stars: 5 },
-    { name: "Anita Desai", role: "RWA President, Madhapur", text: "The petition feature helped us collect 2,000 signatures for a drainage fix. The municipal corporation approved it within a month!", stars: 5 },
+    { name: "Nischal Singana", role: "Resident, Aravali Hostel, Vijayawada", text: "Reported a pothole near the hostel vicinity. Within 48 hours, the municipal team patched it. I've never seen such fast civic response!", stars: 5 },
+    { name: "J Surya Kiran", role: "Professor, KL University", text: "PrajaConnect transformed how I manage local complaints. The SLA dashboard gives me complete visibility and residents trust me more now.", stars: 5 },
+    { name: "B Sudheer", role: "Resident, Tadepalle", text: "The petition feature helped us collect 2,000 signatures for a drainage fix. The municipal corporation approved it within a month!", stars: 5 },
   ];
 
   return (

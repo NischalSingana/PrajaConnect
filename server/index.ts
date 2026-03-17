@@ -211,7 +211,7 @@ app.get('/api/stats', async (req: Request, res: Response) => {
       resolvedAt: issues.resolvedAt
     }).from(issues).where(and(eq(issues.status, 'Resolved'), isNotNull(issues.resolvedAt)));
 
-    let avgResponseTime = '36h'; // Default if no data
+    let avgResponseTime = '0'; // Default if no data
     if (resolvedIssues.length > 0) {
       const totalHours = resolvedIssues.reduce((acc, iss) => {
         const resolutionTimeMs = new Date(iss.resolvedAt!).getTime() - new Date(iss.createdAt).getTime();

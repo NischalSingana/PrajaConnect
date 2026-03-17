@@ -26,7 +26,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [user, setUser] = useState<Citizen | null>(null);
-  const [stats, setStats] = useState({ citizens: 0, issues: 0, resolved: 0, avgResponseTime: '36h' });
+  const [stats, setStats] = useState({ citizens: 0, issues: 0, resolved: 0, avgResponseTime: '0' });
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {

@@ -24,7 +24,7 @@ const TEMP_ANALYTICS = {
     { name: 'Feb', reported: 162, resolved: 170 },
   ],
   wardHeatmap: [
-    { ward: 'Ward 78 - Kukatpally', count: 210 },
+    { ward: 'Aravali Hostel - Vijayawada', count: 210 },
     { ward: 'Ward 120 - Chandrayangutta', count: 380 },
     { ward: 'Ward 55 - Begumpet', count: 95 },
     { ward: 'Serilingampally', count: 145 },
@@ -32,7 +32,7 @@ const TEMP_ANALYTICS = {
     { ward: 'Jubilee Hills', count: 88 },
   ],
   topPoliticians: [
-    { id: '1', name: 'Corporator Ramesh Babu', district: 'Ward 78', transparencyScore: 82 },
+    { id: '1', name: 'J Surya Kiran', district: 'KL University', transparencyScore: 82 },
     { id: '2', name: 'MLA Kavitha Reddy', district: 'Serilingampally', transparencyScore: 94 },
     { id: '3', name: 'Corporator Anitha Kumari', district: 'Ward 55', transparencyScore: 88 },
   ]
@@ -51,7 +51,7 @@ const item: Variants = {
 const COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b'];
 
 export function AnalyticsDashboard() {
-  const { issues } = useLocalStore();
+  const { issues, stats } = useLocalStore();
   
   return (
     <motion.div initial="hidden" animate="show" variants={container} className="space-y-10 pb-32 pt-6">
@@ -100,11 +100,12 @@ export function AnalyticsDashboard() {
           <Card className="bg-white/[0.02] border-white/5 h-full overflow-hidden">
             <CardContent className="p-0 flex flex-col sm:flex-row h-full">
               <div className="flex-1 p-8 border-b sm:border-b-0 sm:border-r border-white/5 hover:bg-white/[0.01] transition-colors">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Avg. Resolution Time</p>
-                <div className="text-3xl font-bold text-indigo-400">2.4<span className="text-lg text-zinc-600 font-semibold ml-2">Days</span></div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">AVG. RESOLUTION</p>
+                <div className="text-3xl font-bold text-indigo-400">{stats.avgResponseTime}<span className="text-lg text-zinc-600 font-semibold ml-2">Verified</span></div>
                 <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
                    <div className="h-full bg-indigo-500 w-[85%]" />
                 </div>
+                <p className="text-[9px] font-bold text-zinc-600 mt-3 uppercase tracking-widest">Audit Verified</p>
               </div>
                <div className="flex-1 p-8 hover:bg-white/[0.01] transition-colors">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Petitions Completed</p>
