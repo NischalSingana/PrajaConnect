@@ -2,8 +2,6 @@
 
 **PrajaConnect** is a state-of-the-art civic accountability platform designed to bridge the gap between citizens and municipal authorities. By leveraging advanced AI and real-time geolocation, PrajaConnect transforms how urban issues are reported, tracked, and resolved.
 
-![PrajaConnect Logo](public/logo.png)
-
 ## 🚀 Key Features
 
 ### 🧠 Issue Intelligence (Dual-LLM)
