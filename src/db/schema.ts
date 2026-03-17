@@ -50,6 +50,14 @@ export const issues = pgTable('issues', {
   petitionTarget: integer('petition_target'),
   commentsCount: integer('comments_count').notNull().default(0),
   
+  // Politician response
+  response: text('response'),
+  
+  // Moderator flags
+  flagged: boolean('flagged').notNull().default(false),
+  flagReason: text('flag_reason'),
+  
+  resolvedAt: timestamp('resolved_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

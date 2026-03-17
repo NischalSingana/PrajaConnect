@@ -52,6 +52,12 @@ export interface Issue {
   imageUrl?: string;
   lat?: number;
   lng?: number;
+  // Politician response
+  response?: string;
+  // Moderator flags
+  flagged: boolean;
+  flagReason?: string | null;
+  resolvedAt?: string | null;
 }
 
 export interface Notification {
