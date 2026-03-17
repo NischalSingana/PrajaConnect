@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
-import { Moon, Sun, Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield } from 'lucide-react';
+import { Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useUser, UserButton } from '@clerk/clerk-react';
@@ -11,7 +10,6 @@ import { useUser, UserButton } from '@clerk/clerk-react';
 // Mock user context removed for Clerk Integration
 
 export function DashboardLayout() {
-  const { theme, toggleTheme } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const { user } = useUser();
@@ -34,8 +32,8 @@ export function DashboardLayout() {
       { name: 'Manage Users', icon: Users, path: '/dashboard/admin/users' },
       { name: 'Global Analytics', icon: BarChart4, path: '/dashboard/analytics' }
     ] : []),
-    { name: 'Profile', icon: User, path: '/profile' },
-    { name: 'Settings', icon: Settings, path: '/settings' },
+    { name: 'Profile', icon: User, path: '/dashboard/profile' },
+    { name: 'Settings', icon: Settings, path: '/dashboard/settings' },
   ];
 
   return (
@@ -98,9 +96,7 @@ export function DashboardLayout() {
 
           <div className="flex items-center space-x-4">
             <NotificationBell />
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+
             <div className="ml-2 flex items-center">
               <UserButton afterSignOutUrl="/" />
             </div>

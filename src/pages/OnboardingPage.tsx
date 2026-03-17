@@ -17,13 +17,27 @@ export function OnboardingPage() {
       if (!isLoaded || !user) return;
 
       try {
-        const pendingRole = localStorage.getItem('pending_role') || 'citizen';
+        // First, check if the user already has a role in their metadata
+        const existingRole = user.publicMetadata.role as string;
+        const pendingRole = localStorage.getItem('pending_role');
+
+        // If they have an existing role and no pending role, just redirect
+        if (existingRole && !pendingRole) {
+          console.log('User already has a role, redirecting to:', existingRole);
+          setStatus('completed');
+          setTimeout(() => {
+            navigate(`/dashboard/${existingRole}`);
+          }, 1500);
+          return;
+        }
+
+        const roleToSync = pendingRole || existingRole || 'citizen';
         const apiUrl = window.location.hostname === 'localhost' 
           ? 'http://localhost:3001/api/sync-user' 
           : '/api/sync-user';
 
         console.log('Initiating sync to:', apiUrl);
-        console.log('Sync payload:', { userId: user.id, role: pendingRole });
+        console.log('Sync payload:', { userId: user.id, role: roleToSync });
 
         const response = await fetch(apiUrl, {
           method: 'POST',
@@ -34,7 +48,7 @@ export function OnboardingPage() {
             userId: user.id,
             email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress || `${user.id}@prajaconnect.local`,
             name: user.fullName || user.username || user.firstName || 'New Citizen',
-            role: pendingRole,
+            role: roleToSync,
             avatar: user.imageUrl,
           }),
         });
@@ -53,7 +67,7 @@ export function OnboardingPage() {
         
         // Wait a beat for the animation
         setTimeout(() => {
-          navigate(`/dashboard/${pendingRole}`);
+          navigate(`/dashboard/${roleToSync}`);
         }, 2000);
       } catch (err) {
         console.error('Onboarding sync error:', err);

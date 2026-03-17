@@ -5,7 +5,7 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { HeroCanvas, FeaturesCanvas } from '../components/ui/HeroCanvas';
 import { Link } from 'react-router-dom';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { RoleSelectionModal } from '../components/auth/RoleSelectionModal';
@@ -16,6 +16,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function LandingPage() {
   const { stats } = useLocalStore();
   const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
@@ -201,7 +202,7 @@ export function LandingPage() {
             
             <div className="hero-text flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               {isSignedIn ? (
-                <Link to="/dashboard/citizen" className="w-full sm:w-auto">
+                <Link to={`/dashboard/${user?.publicMetadata?.role || 'citizen'}`} className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto h-14 px-10 bg-indigo-600 hover:bg-indigo-500 text-white border-none group shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 transition-shadow">
                     Go to Dashboard <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
@@ -494,7 +495,7 @@ export function LandingPage() {
                   Create Account <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               ) : (
-                <Link to="/dashboard/citizen">
+                <Link to={`/dashboard/${user?.publicMetadata?.role || 'citizen'}`}>
                   <Button size="lg" className="h-16 px-14 text-sm font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 border-none min-w-[240px] shadow-2xl transition-all rounded-full group">
                     Go to Dashboard <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Button>

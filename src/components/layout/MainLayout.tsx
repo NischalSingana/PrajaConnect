@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { RoleSelectionModal } from '../auth/RoleSelectionModal';
 
@@ -25,16 +25,13 @@ export function MainLayout() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useUser();
+  const role = (user?.publicMetadata?.role as string) || 'citizen';
   
   const navLinks = [
-    { name: 'Features', path: '/#features' },
-    { 
-      name: isSignedIn ? 'View Your Profile' : 'Feed', 
-      path: isSignedIn ? '/dashboard/citizen' : '/issues' 
-    },
+    { name: 'Home', path: '/' },
+    ...(isSignedIn ? [{ name: 'Feed', path: '/issues' }] : []),
     { name: 'About Us', path: '/about' },
-    ...(isSignedIn ? [{ name: 'Dashboard', path: '/dashboard/citizen' }] : []),
   ];
 
   return (
@@ -92,8 +89,10 @@ export function MainLayout() {
                   </Button>
                 </SignedOut>
                 <SignedIn>
-                  <Link to="/dashboard/citizen">
-                    <Button variant="ghost" className="font-bold uppercase tracking-widest text-[10px] mr-2 hover:bg-white/5">Dashboard</Button>
+                  <Link to={`/dashboard/${role}`}>
+                    <Button variant="outline" className="text-zinc-400 border-white/10 hover:bg-white/5 h-12 px-6 rounded-xl text-xs font-bold uppercase tracking-widest cursor-pointer">
+                      Dashboard
+                    </Button>
                   </Link>
                   <UserButton afterSignOutUrl="/" />
                 </SignedIn>
@@ -143,8 +142,10 @@ export function MainLayout() {
               </Button>
             </SignedOut>
             <SignedIn>
-              <Link to="/dashboard/citizen" className="w-full">
-                <Button className="w-full text-lg h-14 rounded-2xl bg-white text-black">Dashboard</Button>
+              <Link to={`/dashboard/${role}`} className="w-full">
+                <Button variant="outline" className="w-full justify-start text-zinc-400 border-white/10 hover:bg-white/5 py-6 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest">
+                  Dashboard
+                </Button>
               </Link>
             </SignedIn>
           </div>
