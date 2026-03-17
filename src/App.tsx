@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
+import { StoreProvider } from './context/StoreContext';
 
 // Layouts
 import { MainLayout } from './components/layout/MainLayout';
@@ -18,11 +19,14 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import { ModeratorDashboard } from './pages/ModeratorDashboard';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { OnboardingPage } from './pages/OnboardingPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { SettingsPage } from './pages/SettingsPage';
 
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
+      <StoreProvider>
+        <BrowserRouter>
         <SmoothScroll>
           <Routes>
           {/* Public Routes */}
@@ -44,8 +48,8 @@ function App() {
             
             {/* The Public feed is accessible from inside the dashboard layout for logged-in users */}
             <Route path="/dashboard/issues" element={<PublicIssueFeed />} />
-            <Route path="/dashboard/profile" element={<div className="p-8">Profile Placeholder</div>} />
-            <Route path="/dashboard/settings" element={<div className="p-8">Settings Placeholder</div>} />
+            <Route path="/dashboard/profile" element={<ProfilePage />} />
+            <Route path="/dashboard/settings" element={<SettingsPage />} />
           </Route>
           
           {/* Standalone Public Issue Feed Route (for non-logged in users) */}
@@ -57,7 +61,8 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </SmoothScroll>
-      </BrowserRouter>
+        </BrowserRouter>
+      </StoreProvider>
     </ThemeProvider>
   );
 }
