@@ -6,6 +6,7 @@ import { useLocalStore } from '@/hooks/useLocalStore';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ReportIssueModal } from '../components/issues/ReportIssueModal';
+import { useUser } from '@clerk/clerk-react';
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -21,12 +22,34 @@ const item: Variants = {
 };
 
 export function CitizenDashboard() {
-  const { issues, user } = useLocalStore();
+  const { issues, user, isLoading } = useLocalStore();
+  const { user: clerkUser } = useUser();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  
-  if (!user) return null;
 
-  const myIssues = issues.filter(i => i.reporterId === user.id);
+  // Build display user immediately from Clerk (cached, instant).
+  // DB user (with reputationScore & badges) merges in once the fetch completes.
+  const displayUser = user ?? {
+    id: clerkUser?.id ?? '',
+    name: clerkUser?.fullName ?? 'Citizen',
+    reputationScore: 0,
+    badges: [] as string[],
+  };
+
+  const myIssues = issues.filter(i => i.reporterId === displayUser.id);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Activity className="h-8 w-8 text-indigo-500" />
+        </motion.div>
+      </div>
+    );
+  }
+
 
   return (
     <motion.div 
@@ -71,9 +94,9 @@ export function CitizenDashboard() {
             </div>
             <div className="space-y-4">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">Civic Reputation</span>
-              <div className="text-4xl font-black text-white">{user.reputationScore}</div>
+              <div className="text-4xl font-black text-white">{displayUser.reputationScore}</div>
               <div className="flex flex-wrap gap-2 pt-2">
-                {user.badges.slice(0, 3).map(badge => (
+                {displayUser.badges.slice(0, 3).map(badge => (
                   <span key={badge} className="px-2 py-0.5 rounded-md bg-indigo-500/5 border border-indigo-500/10 text-[8px] font-black uppercase tracking-wider text-indigo-400">
                     {badge}
                   </span>
@@ -227,7 +250,7 @@ export function CitizenDashboard() {
               <div className="w-full bg-white/[0.03] h-2 rounded-full overflow-hidden border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: `${(user.reputationScore / 2000) * 100}%` }}
+                  animate={{ width: `${(displayUser.reputationScore / 2000) * 100}%` }}
                   className="h-full bg-gradient-to-r from-indigo-600 to-blue-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]"
                 />
               </div>

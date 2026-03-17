@@ -27,7 +27,7 @@ const item: Variants = {
 };
 
 export function PublicIssueFeed() {
-  const { issues, upvoteIssue } = useLocalStore();
+  const { issues, upvoteIssue, isLoading } = useLocalStore();
   const [activeTab, setActiveTab] = useState('Trending');
   const [activeFilter, setActiveFilter] = useState('All');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -62,6 +62,20 @@ export function PublicIssueFeed() {
     { name: 'Recent', icon: <Clock className="h-4 w-4" /> },
     { name: 'Resolved', icon: <CheckCircle2 className="h-4 w-4" /> },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Globe className="h-10 w-10 text-indigo-500/50" />
+        </motion.div>
+        <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Syncing nodes...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-32 pt-10 px-6">
