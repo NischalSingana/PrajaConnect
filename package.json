@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev-server\" \"vite\"",
-    "dev-server": "tsx --watch server/index.ts",
-    "start": "tsx server/index.ts",
+    "dev-server": "cd backend && mvn spring-boot:run -q",
+    "dev-server:express": "tsx --watch server/index.ts",
+    "start": "cd backend && mvn spring-boot:run -q",
+    "start:express": "tsx server/index.ts",
     "build": "tsc -b && vite build",
+    "build:backend": "cd backend && mvn package -q -DskipTests",
     "lint": "eslint .",
     "preview": "vite preview"
   },
