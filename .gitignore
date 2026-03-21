@@ -8,3 +8,4 @@ dist
 .idea
 *.log
 drizzle/migrations
+backend/target/
