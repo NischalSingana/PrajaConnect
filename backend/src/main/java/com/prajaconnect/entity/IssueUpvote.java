@@ -1,11 +1,7 @@
 package com.prajaconnect.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -13,9 +9,6 @@ import java.time.LocalDateTime;
     name = "issue_upvotes",
     uniqueConstraints = @UniqueConstraint(columnNames = {"issue_id", "user_id"})
 )
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class IssueUpvote {
 
     @Id
@@ -31,4 +24,15 @@ public class IssueUpvote {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public IssueUpvote() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public String getIssueId() { return issueId; }
+    public void setIssueId(String issueId) { this.issueId = issueId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

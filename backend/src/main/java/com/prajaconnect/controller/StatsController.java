@@ -3,7 +3,6 @@ package com.prajaconnect.controller;
 import com.prajaconnect.entity.Issue;
 import com.prajaconnect.repository.IssueRepository;
 import com.prajaconnect.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,17 +14,21 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class StatsController {
 
     private final UserRepository userRepository;
     private final IssueRepository issueRepository;
 
+    public StatsController(UserRepository userRepository, IssueRepository issueRepository) {
+        this.userRepository = userRepository;
+        this.issueRepository = issueRepository;
+    }
+
     @GetMapping("/stats")
     public Map<String, Object> stats() {
-        long citizens  = userRepository.count();
+        long citizens   = userRepository.count();
         long issueCount = issueRepository.count();
-        long resolved  = issueRepository.countByStatus("Resolved");
+        long resolved   = issueRepository.countByStatus("Resolved");
 
         List<Issue> withTimestamp = issueRepository.findResolvedWithTimestamp().stream()
             .filter(i -> i.getResolvedAt() != null)

@@ -3,7 +3,6 @@ package com.prajaconnect.controller;
 import com.prajaconnect.service.AiService;
 import com.prajaconnect.service.IssueService;
 import com.prajaconnect.service.UserService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -14,12 +13,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class IssueController {
 
     private final IssueService issueService;
     private final UserService userService;
     private final AiService aiService;
+
+    public IssueController(IssueService issueService, UserService userService, AiService aiService) {
+        this.issueService = issueService;
+        this.userService  = userService;
+        this.aiService    = aiService;
+    }
 
     @GetMapping("/issues")
     public ResponseEntity<?> getAllIssues() {
@@ -27,10 +31,8 @@ public class IssueController {
     }
 
     @PostMapping("/issues")
-    public ResponseEntity<?> createIssue(
-        @AuthenticationPrincipal Jwt jwt,
-        @RequestBody Map<String, Object> body
-    ) {
+    public ResponseEntity<?> createIssue(@AuthenticationPrincipal Jwt jwt,
+                                          @RequestBody Map<String, Object> body) {
         String userId = jwt.getSubject();
         userService.getOrCreate(userId);
         try {
@@ -41,10 +43,7 @@ public class IssueController {
     }
 
     @PostMapping("/issues/{id}/upvote")
-    public ResponseEntity<?> upvote(
-        @PathVariable String id,
-        @AuthenticationPrincipal Jwt jwt
-    ) {
+    public ResponseEntity<?> upvote(@PathVariable String id, @AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
         userService.getOrCreate(userId);
         try {
@@ -55,11 +54,9 @@ public class IssueController {
     }
 
     @PatchMapping("/issues/{id}/status")
-    public ResponseEntity<?> updateStatus(
-        @PathVariable String id,
-        @AuthenticationPrincipal Jwt jwt,
-        @RequestBody Map<String, String> body
-    ) {
+    public ResponseEntity<?> updateStatus(@PathVariable String id,
+                                           @AuthenticationPrincipal Jwt jwt,
+                                           @RequestBody Map<String, String> body) {
         try {
             return ResponseEntity.ok(issueService.updateStatus(id, body.get("status"), jwt.getSubject()));
         } catch (ResponseStatusException e) {
@@ -72,11 +69,9 @@ public class IssueController {
     }
 
     @PatchMapping("/issues/{id}/respond")
-    public ResponseEntity<?> respond(
-        @PathVariable String id,
-        @AuthenticationPrincipal Jwt jwt,
-        @RequestBody Map<String, String> body
-    ) {
+    public ResponseEntity<?> respond(@PathVariable String id,
+                                      @AuthenticationPrincipal Jwt jwt,
+                                      @RequestBody Map<String, String> body) {
         try {
             return ResponseEntity.ok(issueService.respond(id, body.get("response"), jwt.getSubject()));
         } catch (ResponseStatusException e) {
@@ -89,13 +84,11 @@ public class IssueController {
     }
 
     @PatchMapping("/issues/{id}/flag")
-    public ResponseEntity<?> flag(
-        @PathVariable String id,
-        @AuthenticationPrincipal Jwt jwt,
-        @RequestBody Map<String, Object> body
-    ) {
+    public ResponseEntity<?> flag(@PathVariable String id,
+                                   @AuthenticationPrincipal Jwt jwt,
+                                   @RequestBody Map<String, Object> body) {
         try {
-            boolean flagged  = Boolean.TRUE.equals(body.get("flagged"));
+            boolean flagged   = Boolean.TRUE.equals(body.get("flagged"));
             String flagReason = (String) body.get("flagReason");
             return ResponseEntity.ok(issueService.flag(id, flagged, flagReason, jwt.getSubject()));
         } catch (ResponseStatusException e) {

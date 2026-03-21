@@ -6,7 +6,6 @@ import com.prajaconnect.entity.Notification;
 import com.prajaconnect.repository.IssueRepository;
 import com.prajaconnect.repository.IssueUpvoteRepository;
 import com.prajaconnect.repository.NotificationRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,18 +17,27 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class IssueService {
 
     private static final List<String> VALID_STATUSES = List.of("Pending", "In Progress", "Resolved", "Escalated");
-    private static final Set<String> STATUS_ROLES    = Set.of("politician", "moderator", "admin");
-    private static final Set<String> RESPOND_ROLES   = Set.of("politician", "admin");
-    private static final Set<String> FLAG_ROLES      = Set.of("moderator", "admin");
+    private static final Set<String>  STATUS_ROLES   = Set.of("politician", "moderator", "admin");
+    private static final Set<String>  RESPOND_ROLES  = Set.of("politician", "admin");
+    private static final Set<String>  FLAG_ROLES     = Set.of("moderator", "admin");
 
     private final IssueRepository issueRepository;
     private final IssueUpvoteRepository issueUpvoteRepository;
     private final NotificationRepository notificationRepository;
     private final UserService userService;
+
+    public IssueService(IssueRepository issueRepository,
+                        IssueUpvoteRepository issueUpvoteRepository,
+                        NotificationRepository notificationRepository,
+                        UserService userService) {
+        this.issueRepository = issueRepository;
+        this.issueUpvoteRepository = issueUpvoteRepository;
+        this.notificationRepository = notificationRepository;
+        this.userService = userService;
+    }
 
     public List<Issue> findAll() {
         return issueRepository.findAllByOrderByCreatedAtDesc();
@@ -37,7 +45,6 @@ public class IssueService {
 
     public Issue create(String userId, Map<String, Object> body) {
         String priority = (String) body.getOrDefault("priority", "Medium");
-
         int slaHours = switch (priority) {
             case "Critical" -> 12;
             case "High"     -> 24;
@@ -62,9 +69,9 @@ public class IssueService {
         issue.setFlagged(false);
 
         if (body.get("aiCategoryConfidence") instanceof Number n) issue.setAiCategoryConfidence(n.intValue());
-        if (body.get("lat") instanceof Number n)                  issue.setLat(n.doubleValue());
-        if (body.get("lng") instanceof Number n)                  issue.setLng(n.doubleValue());
-        if (body.get("petitionTarget") instanceof Number n)       issue.setPetitionTarget(n.intValue());
+        if (body.get("lat")             instanceof Number n) issue.setLat(n.doubleValue());
+        if (body.get("lng")             instanceof Number n) issue.setLng(n.doubleValue());
+        if (body.get("petitionTarget")  instanceof Number n) issue.setPetitionTarget(n.intValue());
 
         Issue saved = issueRepository.save(issue);
         saveNotification(userId, "STATUS_CHANGE", "Issue Reported Successfully",
@@ -73,9 +80,6 @@ public class IssueService {
         return saved;
     }
 
-    /**
-     * Idempotent: silently no-ops if the user has already upvoted.
-     */
     public Issue upvote(String id, String userId) {
         Issue issue = findOrThrow(id);
         if (issueUpvoteRepository.existsByIssueIdAndUserId(id, userId)) {
@@ -85,7 +89,6 @@ public class IssueService {
         vote.setIssueId(id);
         vote.setUserId(userId);
         issueUpvoteRepository.save(vote);
-
         issue.setUpvotes(issue.getUpvotes() + 1);
         return issueRepository.save(issue);
     }
@@ -93,12 +96,10 @@ public class IssueService {
     public Issue updateStatus(String id, String status, String callerId) {
         requireRole(callerId, STATUS_ROLES, "update issue status");
         if (!VALID_STATUSES.contains(status)) throw new IllegalArgumentException("Invalid status");
-
         Issue issue = findOrThrow(id);
         issue.setStatus(status);
         issue.setResolvedAt("Resolved".equals(status) ? LocalDateTime.now() : null);
         Issue saved = issueRepository.save(issue);
-
         saveNotification(saved.getReporterId(), "STATUS_CHANGE", "Issue Status Updated",
             "Your report \"" + saved.getTitle() + "\" is now \"" + status + "\".", saved.getId());
         return saved;
@@ -107,11 +108,9 @@ public class IssueService {
     public Issue respond(String id, String response, String callerId) {
         requireRole(callerId, RESPOND_ROLES, "post an official response");
         if (response == null || response.isBlank()) throw new IllegalArgumentException("Response text required");
-
         Issue issue = findOrThrow(id);
         issue.setResponse(response);
         Issue saved = issueRepository.save(issue);
-
         saveNotification(saved.getReporterId(), "REPLY", "Official Response Received",
             "An official has responded to your report \"" + saved.getTitle() + "\".", saved.getId());
         return saved;
@@ -125,8 +124,6 @@ public class IssueService {
         return issueRepository.save(issue);
     }
 
-    // ── helpers ──────────────────────────────────────────────────────
-
     private Issue findOrThrow(String id) {
         return issueRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Issue not found: " + id));
@@ -135,10 +132,8 @@ public class IssueService {
     private void requireRole(String userId, Set<String> allowed, String action) {
         String role = userService.getRoleOrDefault(userId);
         if (!allowed.contains(role)) {
-            throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Role '" + role + "' is not permitted to " + action
-            );
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "Role '" + role + "' is not permitted to " + action);
         }
     }
 

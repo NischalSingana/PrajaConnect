@@ -3,7 +3,6 @@ package com.prajaconnect.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.prajaconnect.entity.User;
 import com.prajaconnect.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -13,11 +12,15 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final ClerkService clerkService;
+
+    public UserService(UserRepository userRepository, ClerkService clerkService) {
+        this.userRepository = userRepository;
+        this.clerkService = clerkService;
+    }
 
     public User getOrCreate(String userId) {
         return userRepository.findById(userId).orElseGet(() -> {
@@ -55,9 +58,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /**
-     * Only admins may change another user's role.
-     */
     public User updateRole(String targetId, String role, String callerId) {
         User caller = userRepository.findById(callerId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Caller not found"));
@@ -73,10 +73,6 @@ public class UserService {
         return target;
     }
 
-    /**
-     * Syncs display-only profile fields (name, email, avatar).
-     * Role is never accepted from the caller — it is always resolved from existing DB record.
-     */
     public User syncUser(String userId, String email, String name, String avatar) {
         User user = userRepository.findById(userId).orElse(new User());
         user.setId(userId);
