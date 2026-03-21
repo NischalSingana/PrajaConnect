@@ -123,6 +123,37 @@ app.get('/api/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Image download proxy — avoids CORS restrictions on R2 public bucket
+app.get('/api/proxy-image', async (req: Request, res: Response) => {
+  const { url, filename } = req.query as { url?: string; filename?: string };
+  if (!url || typeof url !== 'string') {
+    res.status(400).json({ error: 'Missing url parameter' });
+    return;
+  }
+  // Only allow proxying from our own R2 bucket domain
+  const R2_PUBLIC = process.env.R2_PUBLIC_URL ?? '';
+  if (R2_PUBLIC && !url.startsWith(R2_PUBLIC)) {
+    res.status(403).json({ error: 'Forbidden origin' });
+    return;
+  }
+  try {
+    const upstream = await fetch(url);
+    if (!upstream.ok) {
+      res.status(502).json({ error: 'Failed to fetch image' });
+      return;
+    }
+    const contentType = upstream.headers.get('content-type') ?? 'image/jpeg';
+    const safeFilename = (filename ?? 'image.jpg').replace(/[^a-z0-9._-]/gi, '_');
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    const buffer = await upstream.arrayBuffer();
+    res.end(Buffer.from(buffer));
+  } catch {
+    res.status(502).json({ error: 'Proxy error' });
+  }
+});
+
 // ─── Image Upload → Cloudflare R2 ──────────────────────────── //
 app.post('/api/upload-image', requireAuthApi, upload.single('image'), async (req: Request, res: Response) => {
   try {

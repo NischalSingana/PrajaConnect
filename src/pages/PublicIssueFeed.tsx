@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Search, ThumbsUp, Share2, MapPin, PlusCircle, TrendingUp, Clock, CheckCircle2, Globe } from 'lucide-react';
 import { SlaBadge } from '../components/ui/SlaBadge';
 import { PetitionProgress } from '../components/ui/PetitionProgress';
 import { ReportIssueModal } from '../components/issues/ReportIssueModal';
+import { IssueDetailModal } from '../components/issues/IssueDetailModal';
 import { useLocalStore } from '@/hooks/useLocalStore';
 import { cn } from '@/lib/utils';
+import type { Issue } from '@/types';
 
 const FILTERS = ['All', 'Infrastructure', 'Sanitation', 'Safety', 'General'];
 
@@ -32,6 +34,7 @@ export function PublicIssueFeed() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
   const filteredIssues = issues
     .filter(issue => {
@@ -80,6 +83,7 @@ export function PublicIssueFeed() {
   return (
     <div className="max-w-6xl mx-auto space-y-12 pb-32 pt-10 px-6">
       <ReportIssueModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} />
+      <IssueDetailModal issue={selectedIssue} onClose={() => setSelectedIssue(null)} onUpvote={upvoteIssue} />
       
       {/* Professional Header */}
       <div className="relative p-12 rounded-[2.5rem] overflow-hidden border border-white/[0.03] bg-[#050505] shadow-2xl">
@@ -157,22 +161,20 @@ export function PublicIssueFeed() {
 
       {/* Issue Cards - Masonry Layout */}
       {filteredIssues.length > 0 ? (
-        <motion.div 
-          variants={container} 
-          initial="hidden" 
-          animate="show" 
+        <motion.div
+          key={`${activeFilter}-${activeTab}-${searchQuery}`}
+          variants={container}
+          initial="hidden"
+          animate="show"
           className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 px-1"
         >
-          <AnimatePresence mode="popLayout">
-            {filteredIssues.map((issue) => (
-              <motion.div 
-                key={issue.id} 
-                variants={item} 
-                layout 
-                exit={{ opacity: 0, scale: 0.98 }}
-                className="break-inside-avoid mb-8"
-              >
-                <Card className="p-0 border-white/[0.03] bg-[#08080a] flex flex-col overflow-hidden group rounded-[2.5rem] hover:border-white/10 transition-all duration-500 relative shadow-2xl">
+          {filteredIssues.map((issue) => (
+            <motion.div
+              key={issue.id}
+              variants={item}
+              className="break-inside-avoid mb-8"
+            >
+                <Card className="p-0 border-white/[0.03] bg-[#08080a] flex flex-col overflow-hidden group rounded-[2.5rem] hover:border-white/10 transition-all duration-500 relative shadow-2xl cursor-pointer" onClick={() => setSelectedIssue(issue)}>
                   {/* Status Indicator Bar */}
                   <div className={cn(
                     "h-1.5 w-full",
@@ -248,12 +250,12 @@ export function PublicIssueFeed() {
                           variant="secondary" 
                           size="sm" 
                           className="flex-1 rounded-xl h-10 px-4 border-white/[0.03] bg-white/[0.03] hover:bg-white/[0.08] transition-all"
-                          onClick={() => upvoteIssue(issue.id)}
+                          onClick={(e) => { e.stopPropagation(); upvoteIssue(issue.id); }}
                         >
                           <ThumbsUp className="mr-2 h-3 w-3" />
                           <span className="text-[10px] font-bold uppercase tracking-widest">{issue.upvotes.toLocaleString()} Support</span>
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 transition-all text-zinc-500 hover:text-white">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-white/5 transition-all text-zinc-500 hover:text-white" onClick={(e) => e.stopPropagation()}>
                           <Share2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
@@ -261,8 +263,7 @@ export function PublicIssueFeed() {
                   </div>
                 </Card>
               </motion.div>
-            ))}
-          </AnimatePresence>
+          ))}
         </motion.div>
       ) : (
         <motion.div 
