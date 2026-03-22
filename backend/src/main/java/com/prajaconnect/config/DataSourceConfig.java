@@ -2,12 +2,12 @@ package com.prajaconnect.config;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.net.URI;
 
 @Configuration
 public class DataSourceConfig {
@@ -18,20 +18,44 @@ public class DataSourceConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
-        String jdbcUrl = toJdbcUrl(rawUrl);
+        if (rawUrl == null || rawUrl.isBlank()) {
+            throw new IllegalStateException("DATABASE_URL / SPRING_DATASOURCE_URL is not set");
+        }
 
         HikariDataSource ds = new HikariDataSource();
-        ds.setJdbcUrl(jdbcUrl);
         ds.setDriverClassName("org.postgresql.Driver");
         ds.setMaximumPoolSize(5);
         ds.setConnectionTimeout(30_000);
-        return ds;
-    }
 
-    private static String toJdbcUrl(String url) {
-        if (url == null) throw new IllegalStateException("DATABASE_URL / SPRING_DATASOURCE_URL is not set");
-        if (url.startsWith("postgresql://"))  return "jdbc:" + url;
-        if (url.startsWith("postgres://"))    return "jdbc:postgresql" + url.substring("postgres".length());
-        return url; // already jdbc:postgresql://...
+        if (rawUrl.startsWith("jdbc:")) {
+            ds.setJdbcUrl(rawUrl);
+        } else {
+            String normalized = rawUrl;
+            if (normalized.startsWith("postgres://")) {
+                normalized = "postgresql" + normalized.substring("postgres".length());
+            }
+            URI uri = URI.create(normalized);
+            String host = uri.getHost();
+            int port = uri.getPort();
+            String path = uri.getPath();
+            String query = uri.getRawQuery();
+
+            String jdbcUrl = "jdbc:postgresql://" + host + (port > 0 ? ":" + port : "") + path;
+            if (query != null && !query.isEmpty()) {
+                jdbcUrl += "?" + query;
+            }
+            ds.setJdbcUrl(jdbcUrl);
+
+            String userInfo = uri.getUserInfo();
+            if (userInfo != null) {
+                String[] parts = userInfo.split(":", 2);
+                ds.setUsername(parts[0]);
+                if (parts.length > 1) {
+                    ds.setPassword(parts[1]);
+                }
+            }
+        }
+
+        return ds;
     }
 }

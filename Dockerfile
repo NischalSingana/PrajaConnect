@@ -1,26 +1,25 @@
-# Production image
-FROM node:20-alpine
+# Stage 1: Build React frontend
+FROM node:20-alpine AS frontend-build
 WORKDIR /app
-
-# Enable corepack for modern package manager support and install dependencies
 COPY package*.json ./
 RUN npm ci
-
-# Copy the rest of your app's source code
 COPY . .
-
-# Build the Vite frontend application
 RUN npm run build
 
-# Install tsx globally (required for server/index.ts)
-RUN npm install -g tsx
+# Stage 2: Build Spring Boot backend
+FROM maven:3.9-eclipse-temurin-21 AS backend-build
+WORKDIR /app
+COPY backend/pom.xml ./
+RUN mvn dependency:go-offline -q
+COPY backend/src ./src
+COPY --from=frontend-build /app/dist ./src/main/resources/static
+RUN mvn package -q -DskipTests
 
-# Expose the API server port (Coolify default or specified via $PORT)
+# Stage 3: Run
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=backend-build /app/target/*.jar app.jar
 EXPOSE 3000
-
-# Add standard Coolify healthcheck
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
-
-# Start the full-stack server
-CMD ["npm", "run", "start"]
+CMD ["java", "-jar", "app.jar"]
