@@ -21,7 +21,7 @@ import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
-import { HeatmapPage } from './pages/HeatmapPage';
+import { IssueDetailPage } from './pages/IssueDetailPage';
 
 function App() {
   return (
@@ -51,12 +51,12 @@ function App() {
             <Route path="/dashboard/issues" element={<PublicIssueFeed />} />
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
-            <Route path="/dashboard/map" element={<HeatmapPage />} />
           </Route>
           
           {/* Standalone Public Issue Feed Route (for non-logged in users) */}
           <Route element={<MainLayout />}>
             <Route path="/issues" element={<div className="p-4 sm:p-8"><PublicIssueFeed /></div>} />
+            <Route path="/issues/:id" element={<IssueDetailPage />} />
           </Route>
 
           {/* Fallback routing */}
