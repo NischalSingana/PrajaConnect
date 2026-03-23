@@ -175,6 +175,8 @@ export function MainLayout() {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Platform</h4>
               <ul className="space-y-4">
                 <li><Link to="/issues" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Public Feed</Link></li>
+                <li><Link to="/petitions" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Petitions</Link></li>
+                <li><Link to="/leaderboard" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Leaderboard</Link></li>
                 <li><Link to="/register" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Issue Reporting</Link></li>
               </ul>
             </div>
@@ -183,6 +185,8 @@ export function MainLayout() {
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Resources</h4>
               <ul className="space-y-4">
                 <li><Link to="/about" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Our Vision</Link></li>
+                <li><Link to="/terms" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
