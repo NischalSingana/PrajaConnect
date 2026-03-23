@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
-import { Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield, Map } from 'lucide-react';
+import { Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield, Map, Bell, Inbox, AlertOctagon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useUser, UserButton } from '@clerk/clerk-react';
@@ -21,17 +21,24 @@ export function DashboardLayout() {
     { name: 'Dashboard', icon: LayoutDashboard, path: `/dashboard/${role}` },
     { name: 'Public Feed', icon: Files, path: '/issues' },
     { name: 'Issue Map', icon: Map, path: '/dashboard/map' },
+    { name: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
+    ...(role === 'citizen' ? [
+      { name: 'My Issues', icon: Inbox, path: '/dashboard/my-issues' },
+    ] : []),
     ...(role === 'politician' ? [
-      { name: 'My District', icon: Activity, path: '/dashboard/politician/district' }
+      { name: 'My District', icon: Activity, path: '/dashboard/politician/district' },
+      { name: 'Escalations', icon: AlertOctagon, path: '/dashboard/escalations' },
     ] : []),
     ...(role === 'moderator' ? [
       { name: 'Review Queue', icon: Shield, path: '/dashboard/moderator' },
-      { name: 'Conflict Resolution', icon: Users, path: '/dashboard/moderator/conflicts' }
+      { name: 'Conflict Resolution', icon: Users, path: '/dashboard/moderator/conflicts' },
+      { name: 'Escalations', icon: AlertOctagon, path: '/dashboard/escalations' },
     ] : []),
     ...(role === 'admin' ? [
       { name: 'System Logs', icon: FileText, path: '/dashboard/admin/logs' },
       { name: 'Manage Users', icon: Users, path: '/dashboard/admin/users' },
-      { name: 'Global Analytics', icon: BarChart4, path: '/dashboard/analytics' }
+      { name: 'Global Analytics', icon: BarChart4, path: '/dashboard/analytics' },
+      { name: 'Escalations', icon: AlertOctagon, path: '/dashboard/escalations' },
     ] : []),
     { name: 'Profile', icon: User, path: '/dashboard/profile' },
     { name: 'Settings', icon: Settings, path: '/dashboard/settings' },
