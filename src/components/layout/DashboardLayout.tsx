@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { cn } from '../../lib/utils';
-import { Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield } from 'lucide-react';
+import { Menu, LayoutDashboard, Files, User, Settings, FileText, Activity, Users, BarChart4, Shield, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useUser, UserButton } from '@clerk/clerk-react';
@@ -20,6 +20,7 @@ export function DashboardLayout() {
   const navItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: `/dashboard/${role}` },
     { name: 'Public Feed', icon: Files, path: '/issues' },
+    { name: 'Issue Map', icon: Map, path: '/dashboard/map' },
     ...(role === 'politician' ? [
       { name: 'My District', icon: Activity, path: '/dashboard/politician/district' }
     ] : []),
