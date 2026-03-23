@@ -22,6 +22,14 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { HeatmapPage } from './pages/HeatmapPage';
+import { IssueDetailPage } from './pages/IssueDetailPage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
+import { PetitionBoardPage } from './pages/PetitionBoardPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { MyIssuesPage } from './pages/MyIssuesPage';
+import { SlaEscalationPage } from './pages/SlaEscalationPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function App() {
   return (
@@ -52,11 +60,19 @@ function App() {
             <Route path="/dashboard/profile" element={<ProfilePage />} />
             <Route path="/dashboard/settings" element={<SettingsPage />} />
             <Route path="/dashboard/map" element={<HeatmapPage />} />
+            <Route path="/dashboard/notifications" element={<NotificationsPage />} />
+            <Route path="/dashboard/my-issues" element={<MyIssuesPage />} />
+            <Route path="/dashboard/escalations" element={<SlaEscalationPage />} />
           </Route>
-          
+
           {/* Standalone Public Issue Feed Route (for non-logged in users) */}
           <Route element={<MainLayout />}>
             <Route path="/issues" element={<div className="p-4 sm:p-8"><PublicIssueFeed /></div>} />
+            <Route path="/issues/:id" element={<IssueDetailPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/petitions" element={<PetitionBoardPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
           </Route>
 
           {/* Fallback routing */}
