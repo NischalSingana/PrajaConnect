@@ -31,6 +31,7 @@ import { MyIssuesPage } from './pages/MyIssuesPage';
 import { SlaEscalationPage } from './pages/SlaEscalationPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 function DashboardIndexRedirect() {
   const { user } = useUser();
@@ -79,7 +80,7 @@ function App() {
           </Route>
 
           {/* Fallback routing */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </SmoothScroll>
         </BrowserRouter>
