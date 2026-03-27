@@ -197,7 +197,19 @@ export function MainLayout() {
              <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
                © {new Date().getFullYear()} PrajaConnect Labs. All rights reserved.
              </p>
-            <div className="flex space-x-8">
+            <div className="flex items-center gap-6">
+              <a href="https://github.com" target="_blank" rel="noopener noreferrer"
+                className="text-[10px] font-bold uppercase tracking-widest text-zinc-700 hover:text-white transition-colors">
+                GitHub
+              </a>
+              <a href="mailto:support@prajaconnect.in"
+                className="text-[10px] font-bold uppercase tracking-widest text-zinc-700 hover:text-white transition-colors">
+                Contact
+              </a>
+              <Link to="/heatmap"
+                className="text-[10px] font-bold uppercase tracking-widest text-zinc-700 hover:text-white transition-colors">
+                Issue Map
+              </Link>
             </div>
           </div>
         </div>
