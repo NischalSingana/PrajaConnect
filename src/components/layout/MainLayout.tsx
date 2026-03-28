@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { RoleSelectionModal } from '../auth/RoleSelectionModal';
+import { BackToTop } from '../ui/BackToTop';
 
 export function MainLayout() {
   const location = useLocation();
@@ -218,6 +219,7 @@ export function MainLayout() {
         isOpen={isRoleModalOpen} 
         onClose={() => setIsRoleModalOpen(false)} 
       />
+      <BackToTop />
     </div>
   );
 }
