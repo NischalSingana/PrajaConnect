@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { SlaBadge } from '@/components/ui/SlaBadge';
 import { ReportIssueModal } from '@/components/issues/ReportIssueModal';
 import { Link } from 'react-router-dom';
+import { useDebounce } from '@/hooks/useDebounce';
 import {
   Search, Plus, Clock, CheckCircle2,
   MapPin, ThumbsUp, MessageSquare, Flame, AlertTriangle, Activity,
@@ -77,6 +78,7 @@ export function PublicIssueFeed() {
   const { issues, isLoading, upvoteIssue, stats } = useLocalStore();
   const { isSignedIn } = useAuth();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 250);
   const [sort, setSort] = useState('trending');
   const [category, setCategory] = useState('All');
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -86,8 +88,8 @@ export function PublicIssueFeed() {
   const filtered = useMemo(() => {
     let list = [...issues];
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(i =>
         i.title.toLowerCase().includes(q) ||
         i.description?.toLowerCase().includes(q) ||
@@ -105,7 +107,7 @@ export function PublicIssueFeed() {
     if (sort === 'resolved') return list.filter(i => i.status === 'Resolved').sort((a, b) => b.upvotes - a.upvotes);
     if (sort === 'critical') return list.filter(i => i.escalationLevel !== 'Normal' || i.status === 'Escalated');
     return list;
-  }, [issues, search, sort, category]);
+  }, [issues, debouncedSearch, sort, category]);
 
   const handleUpvote = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
