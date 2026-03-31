@@ -9,6 +9,7 @@ import { API_URL } from '@/lib/constants';
 import { IssueCategory, IssuePriority } from '@/types';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
+import { useKeyboardShortcut } from '@/hooks/useKeyboardShortcut';
 
 interface ReportIssueModalProps {
   isOpen: boolean;
@@ -25,6 +26,9 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
   useEffect(() => {
     // Logic preserved for component stability
   }, [isOpen, isLoaded, userLoaded, userId]);
+
+  useKeyboardShortcut('Escape', () => { if (isOpen) onClose(); }, { enabled: isOpen });
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
