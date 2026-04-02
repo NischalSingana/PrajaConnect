@@ -312,13 +312,18 @@ export function CitizenDashboard() {
             </div>
             <div className="space-y-2">
               {[
-                { label: 'View Issue Heatmap', path: '/dashboard/map' },
-                { label: 'SLA Tracker', path: '/dashboard/escalations' },
-                { label: 'Petition Board', path: '/petitions' },
+                { label: 'Issue Heatmap', path: '/dashboard/map', desc: 'See issues near you' },
+                { label: 'SLA Tracker', path: '/dashboard/escalations', desc: 'Monitor deadlines' },
+                { label: 'Petition Board', path: '/petitions', desc: 'Sign active petitions' },
+                { label: 'Leaderboard', path: '/leaderboard', desc: 'Top civic contributors' },
+                { label: 'Analytics', path: '/dashboard/analytics', desc: 'Trend reports & charts' },
               ].map(link => (
                 <Link key={link.path} to={link.path} className="flex items-center justify-between p-3 rounded-xl border border-white/[0.03] hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-all group">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{link.label}</span>
-                  <ArrowRight className="h-3 w-3 text-zinc-700 group-hover:text-indigo-400 transition-colors" />
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors block">{link.label}</span>
+                    <span className="text-[9px] text-zinc-700 group-hover:text-zinc-500 transition-colors">{link.desc}</span>
+                  </div>
+                  <ArrowRight className="h-3 w-3 text-zinc-700 group-hover:text-indigo-400 transition-colors shrink-0" />
                 </Link>
               ))}
             </div>
