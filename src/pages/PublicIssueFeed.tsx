@@ -7,10 +7,11 @@ import { SlaBadge } from '@/components/ui/SlaBadge';
 import { ReportIssueModal } from '@/components/issues/ReportIssueModal';
 import { Link } from 'react-router-dom';
 import { useDebounce } from '@/hooks/useDebounce';
+import { usePagination } from '@/hooks/usePagination';
 import {
   Search, Plus, Clock, CheckCircle2,
   MapPin, ThumbsUp, MessageSquare, Flame, AlertTriangle, Activity,
-  X, Star, FileText, Filter
+  X, Star, FileText, Filter, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -108,6 +109,9 @@ export function PublicIssueFeed() {
     if (sort === 'critical') return list.filter(i => i.escalationLevel !== 'Normal' || i.status === 'Escalated');
     return list;
   }, [issues, debouncedSearch, sort, category]);
+
+  const pagination = usePagination({ totalItems: filtered.length, pageSize: 12 });
+  const paginatedIssues = filtered.slice(pagination.range.start, pagination.range.end);
 
   const handleUpvote = async (e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -292,7 +296,7 @@ export function PublicIssueFeed() {
             className="space-y-4"
           >
             <AnimatePresence mode="popLayout">
-              {filtered.map((issue, idx) => {
+              {paginatedIssues.map((issue, idx) => {
                 const sc = STATUS_COLORS[issue.status] ?? STATUS_COLORS.Pending;
                 const hasUpvoted = upvotedIds.has(issue.id);
 
@@ -414,6 +418,29 @@ export function PublicIssueFeed() {
               })}
             </AnimatePresence>
           </motion.div>
+        )}
+
+        {/* ── Pagination ── */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-4">
+            <button
+              onClick={pagination.prevPage}
+              disabled={!pagination.hasPrev}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white hover:border-white/10 disabled:opacity-30 transition-all"
+            >
+              <ChevronLeft className="h-3.5 w-3.5" /> Prev
+            </button>
+            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">
+              {pagination.currentPage} / {pagination.totalPages}
+            </span>
+            <button
+              onClick={pagination.nextPage}
+              disabled={!pagination.hasNext}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/[0.06] text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-white hover:border-white/10 disabled:opacity-30 transition-all"
+            >
+              Next <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         )}
 
         {/* ── Login CTA ── */}
