@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
 import { useUser, UserButton, useClerk } from '@clerk/clerk-react';
 import { useStore } from '../../context/StoreContext';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 const ROLE_COLORS: Record<string, { badge: string; dot: string; label: string }> = {
   citizen:    { badge: 'border-indigo-500/20 bg-indigo-500/5 text-indigo-400',  dot: 'bg-indigo-500',  label: 'Citizen' },
@@ -22,6 +23,12 @@ export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
+
+  // Auto-close mobile drawer on route change
+  useEffect(() => {
+    if (isMobile) setMobileOpen(false);
+  }, [location.pathname, isMobile]);
   const navigate = useNavigate();
   const { user } = useUser();
   const { signOut } = useClerk();
