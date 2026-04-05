@@ -25,13 +25,15 @@ export function MainLayout() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const { isSignedIn, user } = useUser();
+  const { user } = useUser();
   const role = (user?.publicMetadata?.role as string) || 'citizen';
   
   const navLinks = [
     { name: 'Home', path: '/' },
-    ...(isSignedIn ? [{ name: 'Feed', path: '/issues' }] : []),
-    { name: 'About Us', path: '/about' },
+    { name: 'Issues', path: '/issues' },
+    { name: 'Leaderboard', path: '/leaderboard' },
+    { name: 'Petitions', path: '/petitions' },
+    { name: 'About', path: '/about' },
   ];
 
   return (

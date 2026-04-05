@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
-import { Bell, CheckCheck, AlertCircle, Info, Star, Activity, Megaphone } from 'lucide-react';
+import { useStore } from '@/context/StoreContext';
+import { Bell, CheckCheck, AlertCircle, Info, Star, Activity, Megaphone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Notification } from '@/types';
+import { Link } from 'react-router-dom';
+import type { Notification } from '@/types';
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -14,13 +15,18 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
-const TYPE_META: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
-  issue_update:   { icon: <Activity className="h-4 w-4" />,   color: 'text-blue-400',    bg: 'bg-blue-500/10 border-blue-500/20' },
-  upvote:         { icon: <Star className="h-4 w-4" />,        color: 'text-yellow-400',  bg: 'bg-yellow-500/10 border-yellow-500/20' },
-  comment:        { icon: <Megaphone className="h-4 w-4" />,   color: 'text-indigo-400',  bg: 'bg-indigo-500/10 border-indigo-500/20' },
-  resolution:     { icon: <CheckCheck className="h-4 w-4" />,  color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-  escalation:     { icon: <AlertCircle className="h-4 w-4" />, color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20' },
-  system:         { icon: <Info className="h-4 w-4" />,        color: 'text-zinc-400',    bg: 'bg-zinc-500/10 border-zinc-500/20' },
+const TYPE_META: Record<string, { icon: React.ReactNode; color: string; bg: string; label: string }> = {
+  SLA_WARNING:        { icon: <AlertCircle className="h-4 w-4" />, color: 'text-orange-400',  bg: 'bg-orange-500/10 border-orange-500/20',  label: 'SLA Warning' },
+  ESCALATION:         { icon: <AlertCircle className="h-4 w-4" />, color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20',         label: 'Escalation' },
+  REPLY:              { icon: <Megaphone className="h-4 w-4" />,   color: 'text-indigo-400',  bg: 'bg-indigo-500/10 border-indigo-500/20',   label: 'Reply' },
+  STATUS_CHANGE:      { icon: <Activity className="h-4 w-4" />,    color: 'text-blue-400',    bg: 'bg-blue-500/10 border-blue-500/20',        label: 'Status Update' },
+  PETITION_MILESTONE: { icon: <Star className="h-4 w-4" />,        color: 'text-yellow-400',  bg: 'bg-yellow-500/10 border-yellow-500/20',   label: 'Petition Milestone' },
+  issue_update:       { icon: <Activity className="h-4 w-4" />,    color: 'text-blue-400',    bg: 'bg-blue-500/10 border-blue-500/20',        label: 'Issue Update' },
+  upvote:             { icon: <Star className="h-4 w-4" />,        color: 'text-yellow-400',  bg: 'bg-yellow-500/10 border-yellow-500/20',   label: 'Upvote' },
+  comment:            { icon: <Megaphone className="h-4 w-4" />,   color: 'text-indigo-400',  bg: 'bg-indigo-500/10 border-indigo-500/20',   label: 'Comment' },
+  resolution:         { icon: <CheckCheck className="h-4 w-4" />,  color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', label: 'Resolved' },
+  escalation:         { icon: <AlertCircle className="h-4 w-4" />, color: 'text-red-400',     bg: 'bg-red-500/10 border-red-500/20',         label: 'Escalation' },
+  system:             { icon: <Info className="h-4 w-4" />,        color: 'text-zinc-400',    bg: 'bg-zinc-500/10 border-zinc-500/20',        label: 'System' },
 };
 
 type FilterTab = 'all' | 'unread' | 'read';
@@ -36,7 +42,7 @@ function timeAgo(iso: string) {
 }
 
 export function NotificationsPage() {
-  const { notifications, markNotificationRead } = useLocalStore();
+  const { notifications, markNotificationRead, markAllNotificationsRead } = useStore();
   const [tab, setTab] = useState<FilterTab>('all');
   const [markingAll, setMarkingAll] = useState(false);
 
@@ -50,8 +56,7 @@ export function NotificationsPage() {
 
   const handleMarkAll = async () => {
     setMarkingAll(true);
-    const unread = (notifications as Notification[]).filter(n => !n.isRead);
-    await Promise.all(unread.map(n => markNotificationRead(n.id)));
+    await markAllNotificationsRead();
     setMarkingAll(false);
   };
 
@@ -78,7 +83,7 @@ export function NotificationsPage() {
             <button
               onClick={handleMarkAll}
               disabled={markingAll}
-              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.05] text-zinc-500 hover:text-white hover:border-white/10 transition-all text-[9px] font-black uppercase tracking-widest"
+              className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border border-white/[0.05] text-zinc-500 hover:text-white hover:border-white/10 transition-all text-[9px] font-black uppercase tracking-widest disabled:opacity-50"
             >
               <CheckCheck className={cn('h-3.5 w-3.5', markingAll && 'animate-spin')} />
               Mark all read
@@ -124,7 +129,7 @@ export function NotificationsPage() {
                 <div
                   onClick={() => !notification.isRead && markNotificationRead(notification.id)}
                   className={cn(
-                    'flex items-start gap-5 p-6 rounded-2xl border transition-all cursor-pointer',
+                    'flex items-start gap-5 p-6 rounded-2xl border transition-all cursor-pointer group',
                     notification.isRead
                       ? 'border-white/[0.03] bg-transparent hover:bg-zinc-900/20'
                       : 'border-indigo-500/10 bg-indigo-500/[0.03] hover:bg-indigo-500/[0.05]'
@@ -141,13 +146,27 @@ export function NotificationsPage() {
                       'text-sm font-bold leading-snug',
                       notification.isRead ? 'text-zinc-400' : 'text-white'
                     )}>
-                      {notification.message}
+                      {notification.title || notification.message}
                     </p>
-                    <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-zinc-600">
+                    {notification.title && (
+                      <p className="text-xs text-zinc-500 leading-relaxed">{notification.message}</p>
+                    )}
+                    <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest text-zinc-600 mt-1">
                       <span>{timeAgo(notification.createdAt)}</span>
-                      <span className={cn('capitalize', meta.color)}>{notification.type.replace('_', ' ')}</span>
+                      <span className={cn('capitalize', meta.color)}>{meta.label}</span>
                     </div>
                   </div>
+
+                  {/* Link to issue */}
+                  {notification.linkToIssueId && (
+                    <Link
+                      to={`/issues/${notification.linkToIssueId}`}
+                      onClick={e => e.stopPropagation()}
+                      className="shrink-0 p-2 rounded-lg text-zinc-700 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all"
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  )}
 
                   {/* Unread dot */}
                   {!notification.isRead && (

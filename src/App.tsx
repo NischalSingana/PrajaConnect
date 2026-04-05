@@ -22,6 +22,14 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { IssueDetailPage } from './pages/IssueDetailPage';
+import { LeaderboardPage } from './pages/LeaderboardPage';
+import { PetitionBoardPage } from './pages/PetitionBoardPage';
+import { HeatmapPage } from './pages/HeatmapPage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { MyIssuesPage } from './pages/MyIssuesPage';
+import { SlaEscalationPage } from './pages/SlaEscalationPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
 
 function App() {
   return (
@@ -37,6 +45,13 @@ function App() {
             <Route path="/register/*" element={<RegisterPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/issues" element={<div className="p-4 sm:p-8"><PublicIssueFeed /></div>} />
+            <Route path="/issues/:id" element={<IssueDetailPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            <Route path="/petitions" element={<PetitionBoardPage />} />
+            <Route path="/heatmap" element={<HeatmapPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
           </Route>
 
           {/* Authenticated Dashboard Routes */}
@@ -46,17 +61,13 @@ function App() {
             <Route path="moderator" element={<ModeratorDashboard />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="analytics" element={<AnalyticsDashboard />} />
-            
-            {/* The Public feed is accessible from inside the dashboard layout for logged-in users */}
-            <Route path="/dashboard/issues" element={<PublicIssueFeed />} />
-            <Route path="/dashboard/profile" element={<ProfilePage />} />
-            <Route path="/dashboard/settings" element={<SettingsPage />} />
-          </Route>
-          
-          {/* Standalone Public Issue Feed Route (for non-logged in users) */}
-          <Route element={<MainLayout />}>
-            <Route path="/issues" element={<div className="p-4 sm:p-8"><PublicIssueFeed /></div>} />
-            <Route path="/issues/:id" element={<IssueDetailPage />} />
+            <Route path="issues" element={<PublicIssueFeed />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="my-issues" element={<MyIssuesPage />} />
+            <Route path="escalations" element={<SlaEscalationPage />} />
+            <Route path="map" element={<HeatmapPage />} />
           </Route>
 
           {/* Fallback routing */}

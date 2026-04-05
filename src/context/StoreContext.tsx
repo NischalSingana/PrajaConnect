@@ -16,6 +16,8 @@ interface StoreContextType {
   flagIssue: (id: string, flagged: boolean, reason?: string) => Promise<boolean>;
   fetchUsers: () => Promise<any[]>;
   changeUserRole: (targetUserId: string, role: string) => Promise<boolean>;
+  markNotificationRead: (id: string) => Promise<void>;
+  markAllNotificationsRead: () => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -55,7 +57,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ]);
         
         if (notifRes.ok) setNotifications(await notifRes.json());
-      if (userRes.ok) {
+        if (userRes.ok) {
           const userData = await userRes.json();
           setUser({
             ...userData,
@@ -65,7 +67,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-       // Silent fail - minimizing logs as requested
+       // Silent fail
     } finally {
       setIsLoading(false);
     }
@@ -177,11 +179,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const markNotificationRead = async (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    try {
+      const token = await getToken();
+      await fetch(`${API_URL}/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // Silent fail — optimistic update stays
+    }
+  };
+
+  const markAllNotificationsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try {
+      const token = await getToken();
+      await fetch(`${API_URL}/api/notifications/read-all`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {
+      // Silent fail
+    }
+  };
+
   return (
     <StoreContext.Provider value={{ 
       issues, notifications, user, stats, isLoading, 
       addIssue, upvoteIssue, updateIssueStatus, respondToIssue, flagIssue,
       fetchUsers, changeUserRole,
+      markNotificationRead, markAllNotificationsRead,
       refreshData: fetchData 
     }}>
       {children}

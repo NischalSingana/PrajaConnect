@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
-import { FileText, ThumbsUp, TrendingUp, Filter, Activity, MapPin } from 'lucide-react';
+import { useStore } from '@/context/StoreContext';
+import { FileText, ThumbsUp, TrendingUp, Filter, Activity, MapPin, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -17,9 +18,12 @@ const item: Variants = {
 type SortKey = 'upvotes' | 'progress' | 'newest';
 
 export function PetitionBoardPage() {
-  const { issues, isLoading } = useLocalStore();
+  const { issues, isLoading, upvoteIssue } = useStore();
+  const { isSignedIn } = useAuth();
   const [sort, setSort] = useState<SortKey>('upvotes');
   const [category, setCategory] = useState('All');
+  const [signingId, setSigningId] = useState<string | null>(null);
+  const [signed, setSigned] = useState<Set<string>>(new Set());
 
   const petitions = issues.filter(i => i.isPetition);
   const categories = ['All', ...Array.from(new Set(petitions.map(p => p.category)))];
@@ -35,6 +39,16 @@ export function PetitionBoardPage() {
       }
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
+
+  const handleSign = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isSignedIn || signed.has(id)) return;
+    setSigningId(id);
+    await upvoteIssue(id);
+    setSigned(prev => new Set([...prev, id]));
+    setSigningId(null);
+  };
 
   const statusColor: Record<string, string> = {
     Resolved: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5',
@@ -53,13 +67,14 @@ export function PetitionBoardPage() {
             <FileText className="h-3 w-3" /> Civic Petitions
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Petition Board</h1>
-          <p className="text-zinc-500 font-medium">
-            Sign and track petitions demanding systemic change. Every signature counts.
+          <p className="text-zinc-500 font-medium max-w-2xl">
+            Sign and track petitions demanding systemic change. Every signature helps hold local authorities accountable.
           </p>
-          <div className="flex items-center gap-6 pt-2 text-[10px] font-black uppercase tracking-widest">
+          <div className="flex items-center gap-6 pt-2 text-[10px] font-black uppercase tracking-widest flex-wrap">
             <span className="text-indigo-400">{petitions.length} total petitions</span>
             <span className="text-emerald-400">{petitions.filter(p => p.status === 'Resolved').length} resolved</span>
             <span className="text-amber-400">{petitions.filter(p => p.status === 'In Progress').length} in progress</span>
+            <span className="text-zinc-500">{petitions.reduce((s, p) => s + p.upvotes, 0).toLocaleString()} total signatures</span>
           </div>
         </motion.div>
 
@@ -118,6 +133,7 @@ export function PetitionBoardPage() {
           >
             <FileText className="h-12 w-12 text-zinc-800" />
             <p className="text-zinc-600 text-sm font-bold uppercase tracking-widest">No petitions found</p>
+            <p className="text-zinc-700 text-xs text-center max-w-xs">No issues have been marked as petitions yet. Report an issue and mark it as a petition to start one.</p>
           </motion.div>
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -125,13 +141,15 @@ export function PetitionBoardPage() {
               const target = petition.petitionTarget ?? 1000;
               const pct = Math.min((petition.upvotes / target) * 100, 100);
               const achieved = pct >= 100;
+              const hasSigned = signed.has(petition.id);
+              const isSigning = signingId === petition.id;
               return (
                 <motion.div key={petition.id} variants={item}>
                   <Link to={`/issues/${petition.id}`} className="block group">
                     <div className="p-8 rounded-[2rem] border border-white/[0.04] bg-zinc-900/10 hover:bg-zinc-900/30 hover:border-indigo-500/20 transition-all space-y-6">
 
                       <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2 min-w-0">
+                        <div className="space-y-2 min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className={cn('px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border', statusColor[petition.status])}>
                               {petition.status}
@@ -139,6 +157,11 @@ export function PetitionBoardPage() {
                             <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border border-white/[0.05] text-zinc-500">
                               {petition.category}
                             </span>
+                            {achieved && (
+                              <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border border-emerald-500/20 bg-emerald-500/5 text-emerald-400">
+                                <CheckCircle2 className="h-3 w-3" /> Goal Reached
+                              </span>
+                            )}
                           </div>
                           <h3 className="text-lg font-black text-white group-hover:text-indigo-300 transition-colors leading-snug">
                             {petition.title}
@@ -147,13 +170,40 @@ export function PetitionBoardPage() {
                             {petition.description}
                           </p>
                         </div>
-                        <div className="shrink-0 text-right space-y-1">
-                          <div className="flex items-center gap-1.5 justify-end">
-                            <ThumbsUp className="h-4 w-4 text-indigo-400" />
-                            <span className="text-2xl font-black text-white">{petition.upvotes.toLocaleString()}</span>
+
+                        {/* Sign button */}
+                        {petition.status !== 'Resolved' && (
+                          <button
+                            onClick={(e) => handleSign(petition.id, e)}
+                            disabled={!isSignedIn || hasSigned || isSigning}
+                            className={cn(
+                              'shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl border transition-all',
+                              hasSigned
+                                ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400 cursor-default'
+                                : !isSignedIn
+                                ? 'border-white/[0.05] bg-white/[0.02] text-zinc-600 cursor-not-allowed'
+                                : 'border-indigo-500/20 bg-indigo-500/5 text-indigo-400 hover:bg-indigo-500/10 hover:border-indigo-500/30 hover:scale-105 active:scale-95'
+                            )}
+                          >
+                            {hasSigned ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <ThumbsUp className={cn('h-5 w-5', isSigning && 'animate-bounce')} />
+                            )}
+                            <span className="text-2xl font-black">{petition.upvotes.toLocaleString()}</span>
+                            <span className="text-[8px] font-black uppercase tracking-widest opacity-70">
+                              {hasSigned ? 'Signed' : 'Sign'}
+                            </span>
+                          </button>
+                        )}
+
+                        {petition.status === 'Resolved' && (
+                          <div className="shrink-0 flex flex-col items-center gap-1.5 px-5 py-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-400">
+                            <CheckCircle2 className="h-5 w-5" />
+                            <span className="text-2xl font-black">{petition.upvotes.toLocaleString()}</span>
+                            <span className="text-[8px] font-black uppercase tracking-widest opacity-70">Signatures</span>
                           </div>
-                          <p className="text-[9px] font-black uppercase tracking-widest text-zinc-600">signatures</p>
-                        </div>
+                        )}
                       </div>
 
                       {/* Progress bar */}
@@ -174,7 +224,7 @@ export function PetitionBoardPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-zinc-600">
+                      <div className="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest text-zinc-600 flex-wrap">
                         <span className="flex items-center gap-1.5">
                           <MapPin className="h-3 w-3 text-zinc-700" />{petition.location}
                         </span>
@@ -182,6 +232,9 @@ export function PetitionBoardPage() {
                           <TrendingUp className="h-3 w-3 text-zinc-700" />
                           {new Date(petition.createdAt).toLocaleDateString()}
                         </span>
+                        {!isSignedIn && (
+                          <span className="ml-auto text-zinc-700">Sign in to support this petition</span>
+                        )}
                       </div>
                     </div>
                   </Link>

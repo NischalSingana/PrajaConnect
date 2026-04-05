@@ -1,12 +1,13 @@
 import { motion, Variants } from 'framer-motion';
 import { Button } from '../components/ui/Button';
 import { SlaBadge } from '../components/ui/SlaBadge';
-import { PlusCircle, Award, Star, TrendingUp, Sparkles, Clock, Activity } from 'lucide-react';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { PlusCircle, Award, Star, TrendingUp, Sparkles, Clock, Activity, Bell, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { ReportIssueModal } from '../components/issues/ReportIssueModal';
 import { useUser } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -21,13 +22,29 @@ const item: Variants = {
   show: { scale: 1, opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
 
+const NOTIF_COLORS: Record<string, string> = {
+  SLA_WARNING: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
+  ESCALATION: 'bg-red-500/10 border-red-500/20 text-red-400',
+  REPLY: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400',
+  STATUS_CHANGE: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
+  PETITION_MILESTONE: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
+};
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
 export function CitizenDashboard() {
-  const { issues, user, isLoading } = useLocalStore();
+  const { issues, user, notifications, isLoading } = useStore();
   const { user: clerkUser } = useUser();
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  // Build display user immediately from Clerk (cached, instant).
-  // DB user (with reputationScore & badges) merges in once the fetch completes.
   const displayUser = user ?? {
     id: clerkUser?.id ?? '',
     name: clerkUser?.fullName ?? 'Citizen',
@@ -36,6 +53,12 @@ export function CitizenDashboard() {
   };
 
   const myIssues = issues.filter(i => i.reporterId === displayUser.id);
+  const recentNotifications = notifications.slice(0, 5);
+
+  const resolvedCount = myIssues.filter(i => i.status === 'Resolved').length;
+  const inProgressCount = myIssues.filter(i => i.status === 'In Progress').length;
+  const totalUpvotes = myIssues.reduce((sum, i) => sum + i.upvotes, 0);
+  const resolutionRate = myIssues.length > 0 ? Math.round((resolvedCount / myIssues.length) * 100) : 0;
 
   if (isLoading) {
     return (
@@ -50,7 +73,6 @@ export function CitizenDashboard() {
     );
   }
 
-
   return (
     <motion.div 
       initial="hidden"
@@ -64,126 +86,99 @@ export function CitizenDashboard() {
       <div className="relative p-12 rounded-[2.5rem] overflow-hidden border border-white/[0.03] bg-[#050505] shadow-2xl">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[120px] rounded-full -mr-64 -mt-64" />
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-          <div className="space-y-6">
-            <div className="hero-text inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <Activity className="h-3 w-3" /> Citizen Performance Index
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <Activity className="h-3 w-3" /> Citizen Dashboard
             </div>
             <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
-              Civic <span className="bg-gradient-primary bg-clip-text text-transparent">Nexus.</span>
+              Welcome, <span className="bg-gradient-to-r from-indigo-400 to-blue-400 bg-clip-text text-transparent">{displayUser.name.split(' ')[0]}.</span>
             </h1>
             <p className="text-zinc-500 text-lg font-medium max-w-xl leading-relaxed">
-              Managing your community contributions. Your reports have initiated <span className="text-white font-bold">{myIssues.length}</span> improvement actions.
+              You have filed <span className="text-white font-bold">{myIssues.length}</span> civic reports.{' '}
+              {resolvedCount > 0 && <><span className="text-emerald-400 font-bold">{resolvedCount}</span> have been resolved.</>}
             </p>
           </div>
-          <Button 
-            size="lg" 
-            onClick={() => setIsReportModalOpen(true)}
-            className="md:w-auto w-full bg-white text-black hover:bg-zinc-200 border-none shadow-2xl rounded-full h-14 px-8 text-sm font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
-          >
-            <PlusCircle className="mr-2 h-5 w-5" /> Report Issue
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              size="lg" 
+              onClick={() => setIsReportModalOpen(true)}
+              className="bg-white text-black hover:bg-zinc-200 border-none shadow-2xl rounded-full h-14 px-8 text-sm font-bold uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+            >
+              <PlusCircle className="mr-2 h-5 w-5" /> Report Issue
+            </Button>
+            <Link to="/dashboard/my-issues">
+              <Button variant="outline" size="lg" className="h-14 px-8 rounded-full border-white/10 bg-white/5 text-white hover:bg-white/10 text-sm font-bold uppercase tracking-widest">
+                My Issues <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Executive Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <motion.div variants={item}>
-          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 backdrop-blur-3xl group">
-            <div className="absolute top-6 right-6 p-2 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition-transform">
-               <Award className="h-5 w-5" />
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">Civic Reputation</span>
-              <div className="text-4xl font-black text-white">{displayUser.reputationScore}</div>
-              <div className="flex flex-wrap gap-2 pt-2">
-                {displayUser.badges.slice(0, 3).map(badge => (
-                  <span key={badge} className="px-2 py-0.5 rounded-md bg-indigo-500/5 border border-indigo-500/10 text-[8px] font-black uppercase tracking-wider text-indigo-400">
-                    {badge}
-                  </span>
-                ))}
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {[
+          { label: 'Civic Reputation', value: displayUser.reputationScore, icon: <Award className="h-5 w-5" />, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+          { label: 'Total Reports', value: myIssues.length, icon: <TrendingUp className="h-5 w-5" />, color: 'text-white', bg: 'bg-white/[0.03]' },
+          { label: 'Resolution Rate', value: `${resolutionRate}%`, icon: <CheckCircle2 className="h-5 w-5" />, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+          { label: 'Community Upvotes', value: totalUpvotes.toLocaleString(), icon: <Star className="h-5 w-5" />, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+        ].map((stat) => (
+          <motion.div key={stat.label} variants={item}>
+            <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 group">
+              <div className={cn('absolute top-6 right-6 p-2 rounded-xl group-hover:scale-110 transition-transform', stat.bg)}>
+                <span className={stat.color}>{stat.icon}</span>
+              </div>
+              <div className="space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">{stat.label}</span>
+                <div className={cn('text-4xl font-black', stat.color)}>{stat.value}</div>
               </div>
             </div>
-          </div>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 backdrop-blur-3xl group">
-            <div className="absolute top-6 right-6 p-2 rounded-xl bg-white/[0.03] text-zinc-500 group-hover:scale-110 transition-transform">
-               <TrendingUp className="h-5 w-5" />
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">Improvement Nodes</span>
-              <div className="text-4xl font-black text-white">{myIssues.length}</div>
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block">Active Reports</span>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 backdrop-blur-3xl group">
-            <div className="absolute top-6 right-6 p-2 rounded-xl bg-emerald-500/10 text-emerald-500 group-hover:scale-110 transition-transform">
-               <Sparkles className="h-5 w-5" />
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">Resolution Integrity</span>
-              <div className="text-4xl font-black text-emerald-500">
-                {myIssues.length > 0 ? Math.round((myIssues.filter(i => i.status === 'Resolved').length / myIssues.length) * 100) : 0}%
-              </div>
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block">Operational Efficacy</span>
-            </div>
-          </div>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 backdrop-blur-3xl group">
-            <div className="absolute top-6 right-6 p-2 rounded-xl bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform">
-               <Star className="h-5 w-5" />
-            </div>
-            <div className="space-y-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 block">Community Endorsement</span>
-              <div className="text-4xl font-black text-white">
-                {myIssues.reduce((sum, i) => sum + i.upvotes, 0).toLocaleString()}
-              </div>
-              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest block">Global Validations</span>
-            </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Main Dashboard Workspace */}
+      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Reports & Timeline Section */}
-        <div className="lg:col-span-2 space-y-12">
-          {/* Operational Feed */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <h2 className="text-lg font-black text-white tracking-[0.2em] uppercase">Operational Nodes</h2>
-              <div className="h-px w-24 bg-white/[0.05]" />
-            </div>
+        {/* Issues Feed */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-lg font-black text-white tracking-[0.2em] uppercase">My Recent Reports</h2>
+            <Link to="/dashboard/my-issues" className="text-[9px] font-black uppercase tracking-widest text-zinc-500 hover:text-indigo-400 transition-colors flex items-center gap-1">
+              View all <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
 
+          {myIssues.length === 0 ? (
+            <div className="py-24 rounded-[2.5rem] border border-dashed border-white/5 bg-white/[0.01] flex flex-col items-center justify-center text-center space-y-4">
+              <Activity className="h-10 w-10 text-zinc-800" />
+              <div className="space-y-2">
+                <p className="text-zinc-500 text-sm font-bold">No reports filed yet</p>
+                <p className="text-zinc-700 text-xs">Spot an issue in your community? Report it and hold officials accountable.</p>
+              </div>
+              <Button size="sm" onClick={() => setIsReportModalOpen(true)} className="rounded-full bg-indigo-600 hover:bg-indigo-500 border-none mt-2">
+                <PlusCircle className="mr-2 h-4 w-4" /> File First Report
+              </Button>
+            </div>
+          ) : (
             <div className="space-y-4">
-              {myIssues.length === 0 ? (
-                <div className="py-24 rounded-[2.5rem] border border-dashed border-white/5 bg-white/[0.01] flex flex-col items-center justify-center text-center space-y-4">
-                  <Activity className="h-10 w-10 text-zinc-800" />
-                  <p className="text-zinc-600 text-sm font-medium">No system activity detected.</p>
-                </div>
-              ) : (
-                myIssues.map((issue) => (
-                  <motion.div key={issue.id} variants={item}>
-                    <div className="group relative p-6 rounded-3xl border border-white/[0.03] bg-[#08080a] hover:bg-zinc-900/40 hover:border-white/10 transition-all duration-500 cursor-pointer">
+              {myIssues.slice(0, 6).map((issue) => (
+                <motion.div key={issue.id} variants={item}>
+                  <Link to={`/issues/${issue.id}`} className="block group">
+                    <div className="relative p-6 rounded-3xl border border-white/[0.03] bg-[#08080a] hover:bg-zinc-900/40 hover:border-indigo-500/10 transition-all duration-500">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
                         <div className="flex items-start gap-4 flex-1">
                           <div className={cn(
                             "h-12 w-1.5 rounded-full shrink-0",
                             issue.status === 'Resolved' ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]" : 
-                            issue.status === 'In Progress' ? "bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]" : "bg-zinc-800"
+                            issue.status === 'In Progress' ? "bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]" : 
+                            issue.status === 'Escalated' ? "bg-red-500" : "bg-zinc-800"
                           )} />
-                          <div className="space-y-1.5 min-w-0">
+                          <div className="space-y-1 min-w-0">
                             <h3 className="font-bold text-white group-hover:text-indigo-400 transition-colors truncate">{issue.title}</h3>
-                            <div className="flex flex-wrap items-center gap-4 text-[9px] font-black text-zinc-500 uppercase tracking-widest">
-                              <span className="text-zinc-700">NODE·{issue.id.slice(0, 8)}</span>
-                              <span className="flex items-center gap-1.5"><Clock className="h-3 w-3" /> {new Date(issue.createdAt).toLocaleDateString()}</span>
-                              {issue.isPetition && <span className="text-indigo-400 px-1.5 py-0.5 rounded bg-indigo-500/5 border border-indigo-500/10">Petition Entry</span>}
+                            <div className="flex flex-wrap items-center gap-3 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                              <span>{issue.category}</span>
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(issue.createdAt).toLocaleDateString()}</span>
+                              <span className="flex items-center gap-1"><Star className="h-3 w-3" /> {issue.upvotes} upvotes</span>
                             </div>
                           </div>
                         </div>
@@ -192,7 +187,8 @@ export function CitizenDashboard() {
                           <div className={cn(
                             "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
                             issue.status === 'Resolved' ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-500" : 
-                            issue.status === 'In Progress' ? "border-amber-500/20 bg-amber-500/5 text-amber-500" : "border-white/5 bg-white/5 text-zinc-500"
+                            issue.status === 'In Progress' ? "border-amber-500/20 bg-amber-500/5 text-amber-500" : 
+                            issue.status === 'Escalated' ? "border-red-500/20 bg-red-500/5 text-red-500" : "border-white/5 bg-white/5 text-zinc-500"
                           )}>
                             {issue.status}
                           </div>
@@ -200,99 +196,132 @@ export function CitizenDashboard() {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Activity Timeline */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 px-2">
-              <h2 className="text-lg font-black text-white tracking-[0.2em] uppercase">Cognitive Timeline</h2>
-              <div className="h-px flex-1 bg-white/[0.05]" />
-            </div>
-            
-            <div className="relative pl-8 space-y-10 before:absolute before:inset-y-0 before:left-[11px] before:w-[2px] before:bg-gradient-to-b before:from-indigo-600 before:via-blue-500 before:to-transparent">
-              {[
-                { type: 'Reputation', label: 'Reputation Milestone', desc: 'Threshold reached: Gained +50 Civic Influence.', time: '2 hours ago', icon: <Award className="h-3 w-3" /> },
-                { type: 'SLA', label: 'Resolution Updated', desc: 'Ticket NODE·A8B2 moved to "In Progress" by GHMC Ward Office.', time: '5 hours ago', icon: <Activity className="h-3 w-3 text-emerald-500" /> },
-                { type: 'Support', label: 'Community Support', desc: 'Your report on "Main Road Pothole" received 15 new upvotes.', time: '1 day ago', icon: <TrendingUp className="h-3 w-3 text-blue-400" /> },
-              ].map((activity, i) => (
-                <div key={i} className="relative group">
-                  <div className="absolute -left-[27px] top-1 px-1.5 py-1.5 rounded-full bg-zinc-950 border border-white/10 z-10 group-hover:bg-indigo-600 transition-colors">
-                    {activity.icon}
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-white uppercase tracking-widest">{activity.label}</span>
-                      <span className="text-[9px] font-bold text-zinc-600 uppercase tracking-widest">{activity.time}</span>
-                    </div>
-                    <p className="text-zinc-500 text-sm font-medium leading-relaxed">{activity.desc}</p>
-                  </div>
-                </div>
+                  </Link>
+                </motion.div>
               ))}
             </div>
-          </div>
+          )}
+
+          {/* Quick stats for In Progress and Escalated */}
+          {(inProgressCount > 0 || myIssues.filter(i => i.status === 'Escalated').length > 0) && (
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              {inProgressCount > 0 && (
+                <div className="p-5 rounded-2xl border border-amber-500/20 bg-amber-500/5">
+                  <div className="text-2xl font-black text-amber-400">{inProgressCount}</div>
+                  <div className="text-[9px] font-black uppercase tracking-widest text-amber-600 mt-1">In Progress</div>
+                </div>
+              )}
+              {myIssues.filter(i => i.status === 'Escalated').length > 0 && (
+                <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
+                  <div className="text-2xl font-black text-red-400">{myIssues.filter(i => i.status === 'Escalated').length}</div>
+                  <div className="text-[9px] font-black uppercase tracking-widest text-red-600 mt-1">Escalated</div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Intelligence Sidebar */}
-        <div className="space-y-12">
-          {/* Reputation Progress Card */}
-          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 backdrop-blur-3xl space-y-8 overflow-hidden">
+        {/* Right Sidebar */}
+        <div className="space-y-8">
+          {/* Reputation Card */}
+          <div className="relative p-8 rounded-[2.5rem] border border-white/[0.05] bg-zinc-900/20 backdrop-blur-3xl space-y-6 overflow-hidden">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-600/10 blur-[80px] rounded-full" />
             
-            <div className="space-y-4 relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Impact Level Progress</span>
-                <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 text-[8px] font-black uppercase tracking-widest">Level 4</span>
-              </div>
+            <div className="space-y-3 relative z-10">
+              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] block">Reputation Progress</span>
+              <div className="text-4xl font-black text-white">{displayUser.reputationScore}</div>
               <div className="w-full bg-white/[0.03] h-2 rounded-full overflow-hidden border border-white/5">
                 <motion.div 
                   initial={{ width: 0 }}
-                  animate={{ width: `${(displayUser.reputationScore / 2000) * 100}%` }}
-                  className="h-full bg-gradient-to-r from-indigo-600 to-blue-500 shadow-[0_0_15px_rgba(79,70,229,0.5)]"
+                  animate={{ width: `${Math.min((displayUser.reputationScore / 1000) * 100, 100)}%` }}
+                  className="h-full bg-gradient-to-r from-indigo-600 to-blue-500"
                 />
               </div>
               <div className="flex justify-between text-[8px] font-black text-zinc-600 uppercase tracking-widest">
-                <span>Bronze Tier</span>
-                <span>Silver Tier Next</span>
+                <span>0 pts</span>
+                <span>1000 pts Silver</span>
               </div>
             </div>
 
-            <div className="pt-8 border-t border-white/[0.05] space-y-6 relative z-10">
-              <h3 className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Core Certificates</h3>
-              {[
-                { label: 'Early Adopter', sub: 'Founding community member', icon: <Award className="text-amber-500" /> },
-                { label: 'Master Reporter', sub: 'Verified reporter status', icon: <Star className="text-blue-500" /> },
-              ].map((cert, i) => (
-                <div key={i} className="flex items-center gap-4 group cursor-pointer">
-                  <div className="h-10 w-10 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-center group-hover:bg-white/[0.08] transition-all">
-                    {cert.icon}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-white uppercase tracking-widest group-hover:text-indigo-400 transition-colors">{cert.label}</p>
-                    <p className="text-[9px] font-bold text-zinc-600 italic uppercase tracking-wider">{cert.sub}</p>
-                  </div>
+            {displayUser.badges && displayUser.badges.length > 0 && (
+              <div className="pt-4 border-t border-white/[0.05] space-y-3 relative z-10">
+                <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] block">Badges</span>
+                <div className="flex flex-wrap gap-2">
+                  {displayUser.badges.map((badge: string) => (
+                    <span key={badge} className="px-2 py-1 rounded-lg bg-indigo-500/5 border border-indigo-500/10 text-[9px] font-black uppercase tracking-wider text-indigo-400 flex items-center gap-1">
+                      <Award className="h-3 w-3" /> {badge}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
 
-            <Button variant="outline" className="w-full relative z-10 rounded-2xl h-12 border-white/5 bg-white/[0.01] text-[9px] uppercase font-black tracking-[0.2em] hover:bg-white/5">
-              Generate Performance Report
-            </Button>
+            <Link to="/leaderboard" className="block relative z-10">
+              <Button variant="outline" className="w-full rounded-2xl h-11 border-white/5 bg-white/[0.01] text-[9px] uppercase font-black tracking-[0.2em] hover:bg-white/5">
+                View Leaderboard <ArrowRight className="ml-2 h-3 w-3" />
+              </Button>
+            </Link>
           </div>
 
-          {/* AI Optimizer Card */}
-          <div className="relative p-8 rounded-[2.5rem] bg-indigo-600/5 border border-indigo-500/10 space-y-4 overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="relative z-10 flex items-center gap-3 text-indigo-400 mb-2">
-              <Sparkles className="h-4 w-4" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em]">AI Insights</span>
+          {/* Recent Notifications */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">Recent Notifications</span>
+              <Link to="/dashboard/notifications" className="text-[9px] font-black text-zinc-600 hover:text-indigo-400 transition-colors uppercase tracking-widest flex items-center gap-1">
+                All <ArrowRight className="h-3 w-3" />
+              </Link>
             </div>
-            <p className="relative z-10 text-xs text-zinc-400 font-medium leading-relaxed">
-              Based on your activity pattern, your reports are <span className="text-white font-bold">2.4x</span> more likely to reach "Resolved" status due to high-fidelity descriptions.
-            </p>
+
+            {recentNotifications.length === 0 ? (
+              <div className="py-10 rounded-2xl border border-dashed border-white/5 flex flex-col items-center gap-2">
+                <Bell className="h-8 w-8 text-zinc-800" />
+                <p className="text-zinc-700 text-xs font-bold uppercase tracking-widest">No notifications</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {recentNotifications.map(notif => {
+                  const colorClass = NOTIF_COLORS[notif.type] ?? 'bg-zinc-500/10 border-zinc-500/20 text-zinc-400';
+                  return (
+                    <div key={notif.id} className={cn(
+                      'flex items-start gap-3 p-4 rounded-2xl border transition-all',
+                      notif.isRead ? 'border-white/[0.03] bg-transparent' : 'border-indigo-500/10 bg-indigo-500/[0.02]'
+                    )}>
+                      <div className={cn('shrink-0 mt-0.5 p-1.5 rounded-lg border', colorClass)}>
+                        <Bell className="h-3 w-3" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn('text-xs font-bold leading-snug', notif.isRead ? 'text-zinc-500' : 'text-white')}>
+                          {notif.title || notif.message}
+                        </p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-700 mt-0.5">
+                          {timeAgo(notif.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="p-6 rounded-[2rem] bg-indigo-600/5 border border-indigo-500/10 space-y-4">
+            <div className="flex items-center gap-2 text-indigo-400">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em]">Quick Links</span>
+            </div>
+            <div className="space-y-2">
+              {[
+                { label: 'View Issue Heatmap', path: '/dashboard/map' },
+                { label: 'SLA Tracker', path: '/dashboard/escalations' },
+                { label: 'Petition Board', path: '/petitions' },
+              ].map(link => (
+                <Link key={link.path} to={link.path} className="flex items-center justify-between p-3 rounded-xl border border-white/[0.03] hover:border-indigo-500/20 hover:bg-indigo-500/5 transition-all group">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 group-hover:text-white transition-colors">{link.label}</span>
+                  <ArrowRight className="h-3 w-3 text-zinc-700 group-hover:text-indigo-400 transition-colors" />
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>
