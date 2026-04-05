@@ -30,6 +30,24 @@ public class IssueController {
         return ResponseEntity.ok(issueService.findAll());
     }
 
+    @GetMapping("/issues/my")
+    public ResponseEntity<?> getMyIssues(@AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok(issueService.findByReporter(jwt.getSubject()));
+    }
+
+    @DeleteMapping("/issues/{id}")
+    public ResponseEntity<?> deleteIssue(@PathVariable String id,
+                                          @AuthenticationPrincipal Jwt jwt) {
+        try {
+            issueService.deleteByOwner(id, jwt.getSubject());
+            return ResponseEntity.noContent().build();
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode()).body(Map.of("error", e.getReason()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/issues")
     public ResponseEntity<?> createIssue(@AuthenticationPrincipal Jwt jwt,
                                           @RequestBody Map<String, Object> body) {

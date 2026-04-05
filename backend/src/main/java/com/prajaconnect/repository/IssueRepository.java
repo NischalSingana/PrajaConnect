@@ -10,6 +10,8 @@ public interface IssueRepository extends JpaRepository<Issue, String> {
 
     List<Issue> findAllByOrderByCreatedAtDesc();
 
+    List<Issue> findByReporterIdOrderByCreatedAtDesc(String reporterId);
+
     long countByStatus(String status);
 
     @Query("SELECT i FROM Issue i WHERE i.status = 'Resolved' AND i.resolvedAt IS NOT NULL")

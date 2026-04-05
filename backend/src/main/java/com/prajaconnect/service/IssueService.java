@@ -43,6 +43,18 @@ public class IssueService {
         return issueRepository.findAllByOrderByCreatedAtDesc();
     }
 
+    public List<Issue> findByReporter(String reporterId) {
+        return issueRepository.findByReporterIdOrderByCreatedAtDesc(reporterId);
+    }
+
+    public void deleteByOwner(String id, String callerId) {
+        Issue issue = findOrThrow(id);
+        if (!issue.getReporterId().equals(callerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only delete your own issues");
+        }
+        issueRepository.deleteById(id);
+    }
+
     public Issue create(String userId, Map<String, Object> body) {
         String priority = (String) body.getOrDefault("priority", "Medium");
         int slaHours = switch (priority) {

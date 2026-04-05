@@ -5,6 +5,7 @@ import { useUser, useAuth } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SlaBadge } from '@/components/ui/SlaBadge';
+import { API_URL } from '@/lib/constants';
 import {
   Plus, Search, X, Filter, Activity, Clock, ThumbsUp, MapPin,
   CheckCircle2, AlertTriangle, FileDown, Trash2, ExternalLink,
@@ -149,7 +150,7 @@ function IssueCard({ issue, onDelete }: { issue: Issue; onDelete: (id: string) =
 export function MyIssuesPage() {
   const { issues, isLoading } = useStore();
   const { user: clerkUser } = useUser();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, getToken } = useAuth();
 
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('All');
@@ -178,7 +179,20 @@ export function MyIssuesPage() {
     return list;
   }, [myIssues, search, status, category, sort]);
 
-  const handleDelete = (id: string) => setDeleted(prev => new Set([...prev, id]));
+  const handleDelete = async (id: string) => {
+    if (isSignedIn) {
+      try {
+        const token = await getToken();
+        await fetch(`${API_URL}/api/issues/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch {
+        // fall through to local state removal
+      }
+    }
+    setDeleted(prev => new Set([...prev, id]));
+  };
 
   const exportCSV = () => {
     const header = 'Title,Status,Category,Location,Upvotes,Created At';
