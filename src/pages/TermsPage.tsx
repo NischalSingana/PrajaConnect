@@ -1,64 +1,170 @@
 import { motion } from 'framer-motion';
-import { FileText } from 'lucide-react';
-
-const section = (title: string, content: string) => ({ title, content });
+import { Shield, FileText, Calendar, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const SECTIONS = [
-  section('Acceptance of Terms', 'By accessing or using PrajaConnect, you agree to be bound by these Terms of Service. If you do not agree, please do not use the platform.'),
-  section('Use of the Platform', 'PrajaConnect is a civic engagement platform for reporting and tracking public issues. You agree to use the platform only for lawful purposes and in a manner that does not infringe the rights of others.'),
-  section('User Accounts', 'You are responsible for maintaining the confidentiality of your account credentials. You must provide accurate information during registration and keep your account details up to date.'),
-  section('Prohibited Content', 'You must not post content that is false, defamatory, harassing, obscene, or that infringes any third-party intellectual property rights. PrajaConnect reserves the right to remove any content that violates these terms.'),
-  section('Issue Reporting', 'All issues reported must be genuine civic concerns. Submitting false, misleading, or frivolous reports may result in account suspension. PrajaConnect does not guarantee resolution of any reported issue.'),
-  section('Petitions', 'Petitions created on PrajaConnect are civic expressions of public opinion. They do not constitute legally binding obligations on any government body unless explicitly acknowledged by the relevant authority.'),
-  section('Intellectual Property', 'All content, trademarks, and other intellectual property on this platform belong to PrajaConnect or its licensors. You may not reproduce or distribute platform content without prior written permission.'),
-  section('Limitation of Liability', 'PrajaConnect is provided "as is" without warranties of any kind. We are not liable for any indirect, incidental, or consequential damages arising from your use of the platform.'),
-  section('Modifications', 'We reserve the right to modify these terms at any time. Continued use of the platform after changes constitutes acceptance of the revised terms.'),
-  section('Governing Law', 'These terms are governed by the laws of India. Any disputes shall be subject to the jurisdiction of the courts in Hyderabad, Telangana.'),
+  {
+    title: '1. Acceptance of Terms',
+    content: `By accessing or using PrajaConnect ("the Platform"), you confirm that you have read, understood, and agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree to these terms, please do not use the Platform.
+
+These Terms apply to all visitors, registered users, and all others who access or use the Platform. By using PrajaConnect, you represent that you are at least 18 years old or that you are using the Platform with the consent and supervision of a parent or guardian.`
+  },
+  {
+    title: '2. Description of Service',
+    content: `PrajaConnect is a civic engagement platform that allows citizens to report local governance issues (potholes, broken streetlights, sanitation problems, etc.), track their resolution through SLA deadlines, sign community petitions, and engage with elected representatives and municipal officials.
+
+The Platform facilitates communication between citizens and public officials but does not guarantee that all reported issues will be resolved within specified timelines. PrajaConnect is not a government body and has no authority to compel any official action.`
+  },
+  {
+    title: '3. User Accounts & Registration',
+    content: `To access most features of PrajaConnect, you must create an account through our third-party authentication provider (Clerk). You are responsible for:
+
+• Maintaining the confidentiality of your account credentials
+• All activities that occur under your account
+• Providing accurate and current information during registration
+• Promptly notifying us of any unauthorized access to your account
+
+We reserve the right to terminate or suspend accounts that violate these Terms, engage in fraudulent activity, or harm the community.`
+  },
+  {
+    title: '4. User Conduct & Prohibited Activities',
+    content: `You agree not to use PrajaConnect to:
+
+• Submit false, misleading, or fabricated civic reports
+• Harass, abuse, or threaten other users or public officials
+• Upload content that is defamatory, obscene, or violates any third-party intellectual property rights
+• Attempt to interfere with, compromise, or circumvent the security of the Platform
+• Use automated tools, bots, or scripts to scrape content or create accounts
+• Impersonate any person, government body, or official authority
+• Use the Platform for commercial solicitation or spam
+
+Violations may result in immediate account suspension and, where applicable, reporting to appropriate law enforcement authorities.`
+  },
+  {
+    title: '5. Content & Intellectual Property',
+    content: `All content you submit (issue reports, comments, images, petitions) remains your intellectual property. By submitting content to PrajaConnect, you grant us a non-exclusive, worldwide, royalty-free license to display, store, and share your content in connection with the Platform's purpose of civic engagement.
+
+You represent that you have all rights necessary to grant this license, and that your content does not violate any third-party rights or applicable laws.
+
+The PrajaConnect brand, logo, design system, and proprietary technology remain the exclusive property of PrajaConnect and its licensors.`
+  },
+  {
+    title: '6. SLA & Resolution Commitments',
+    content: `PrajaConnect publishes Service Level Agreement (SLA) targets for issue resolution based on severity classification. These targets represent our best-effort expectations communicated to relevant authorities.
+
+We do not guarantee issue resolution within SLA timelines. The Platform serves as a transparency and accountability tool — actual resolution depends on the responsiveness and capacity of the relevant municipal or government departments.
+
+Escalation notifications are automated and informational only. They do not constitute legal obligations on any government body.`
+  },
+  {
+    title: '7. Privacy & Data Protection',
+    content: `Your use of the Platform is also governed by our Privacy Policy, which is incorporated herein by reference. Please review our Privacy Policy at /privacy to understand our data collection and usage practices.
+
+We comply with applicable Indian data protection laws and take reasonable measures to protect your personal information.`
+  },
+  {
+    title: '8. Disclaimer of Warranties',
+    content: `THE PLATFORM IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. PRAJACONNECT DISCLAIMS ALL WARRANTIES INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND UNINTERRUPTED OR ERROR-FREE SERVICE.
+
+We do not warrant that the Platform will meet your requirements or that defects will be corrected. Your use of the Platform is at your sole risk.`
+  },
+  {
+    title: '9. Limitation of Liability',
+    content: `TO THE MAXIMUM EXTENT PERMITTED BY LAW, PRAJACONNECT SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF OR INABILITY TO USE THE PLATFORM.
+
+Our total liability to you for all claims arising from these Terms or your use of the Platform shall not exceed the amount you paid us (if any) in the 12 months preceding the claim.`
+  },
+  {
+    title: '10. Governing Law & Dispute Resolution',
+    content: `These Terms are governed by the laws of India. Any disputes arising from or related to these Terms shall be subject to the exclusive jurisdiction of the courts located in Andhra Pradesh, India.
+
+Before initiating any formal legal proceedings, you agree to contact us at legal@prajaconnect.in and attempt to resolve the dispute informally.`
+  },
+  {
+    title: '11. Modifications to Terms',
+    content: `We reserve the right to update or modify these Terms at any time. We will notify you of material changes by posting an announcement on the Platform or by email. Your continued use of the Platform after any changes constitutes your acceptance of the updated Terms.
+
+We recommend reviewing these Terms periodically to stay informed of updates.`
+  },
+  {
+    title: '12. Contact Information',
+    content: `If you have questions, concerns, or legal inquiries regarding these Terms of Service, please contact us at:
+
+PrajaConnect Legal Team
+Email: legal@prajaconnect.in
+Address: KL University Campus, Vijayawada, Andhra Pradesh, India - 522302`
+  },
 ];
 
 export function TermsPage() {
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-12">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 space-y-16">
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-zinc-400 text-[10px] font-black uppercase tracking-[0.2em]">
-            <FileText className="h-3 w-3" /> Legal
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-indigo-400" />
+            </div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-indigo-500/20 bg-indigo-500/5 text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em]">
+              Legal Document
+            </div>
           </div>
           <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Terms of Service</h1>
-          <p className="text-zinc-500 font-medium">Last updated: March 2026</p>
+          <p className="text-zinc-500 font-medium leading-relaxed max-w-xl">
+            Please read these terms carefully before using PrajaConnect. By using our platform, you agree to be bound by these terms.
+          </p>
+          <div className="flex flex-wrap items-center gap-6 text-[10px] font-black uppercase tracking-widest text-zinc-600">
+            <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Effective: 1 January 2026</span>
+            <span className="flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> Governing Law: India</span>
+            <span className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> legal@prajaconnect.in</span>
+          </div>
         </motion.div>
 
+        {/* Summary box */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}
+          className="p-8 rounded-[2rem] border border-amber-500/10 bg-amber-500/[0.03]"
+        >
+          <p className="text-[10px] font-black uppercase tracking-widest text-amber-500 mb-3">TL;DR Summary</p>
+          <ul className="space-y-2 text-sm text-zinc-400 leading-relaxed">
+            <li className="flex items-start gap-2"><span className="text-amber-500 shrink-0 mt-0.5">→</span> Only submit real, verifiable civic issues. False reports may lead to account suspension.</li>
+            <li className="flex items-start gap-2"><span className="text-amber-500 shrink-0 mt-0.5">→</span> We are a transparency platform, not a government body. We cannot guarantee issue resolution.</li>
+            <li className="flex items-start gap-2"><span className="text-amber-500 shrink-0 mt-0.5">→</span> Your content stays yours, but you grant us a license to display it on the platform.</li>
+            <li className="flex items-start gap-2"><span className="text-amber-500 shrink-0 mt-0.5">→</span> Disputes are governed by Indian law in Andhra Pradesh courts.</li>
+          </ul>
+        </motion.div>
+
+        {/* Sections */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="space-y-8"
+          transition={{ delay: 0.15 }}
+          className="space-y-10"
         >
-          {SECTIONS.map((s, i) => (
+          {SECTIONS.map((section, i) => (
             <motion.div
-              key={s.title}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 + i * 0.04 }}
-              className="p-8 rounded-[2rem] border border-white/[0.04] bg-zinc-900/10 space-y-3"
+              key={section.title}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ delay: i * 0.03 }}
+              className="space-y-4"
             >
-              <h2 className="text-sm font-black text-white uppercase tracking-widest">
-                <span className="text-zinc-700 mr-2">{String(i + 1).padStart(2, '0')}.</span>{s.title}
-              </h2>
-              <p className="text-zinc-400 text-sm font-medium leading-relaxed">{s.content}</p>
+              <h2 className="text-lg font-black text-white">{section.title}</h2>
+              <div className="text-zinc-500 text-sm leading-relaxed whitespace-pre-line">{section.content}</div>
+              {i < SECTIONS.length - 1 && <div className="border-t border-white/[0.04] pt-2" />}
             </motion.div>
           ))}
         </motion.div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="text-center text-[10px] font-black uppercase tracking-widest text-zinc-700"
-        >
-          Questions? Contact us at legal@prajaconnect.in
-        </motion.p>
+        {/* Footer nav */}
+        <div className="pt-8 border-t border-white/[0.04] flex flex-wrap gap-4 text-[10px] font-black uppercase tracking-widest text-zinc-600">
+          <Link to="/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link>
+          <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
+          <Link to="/" className="hover:text-white transition-colors">Home</Link>
+          <span className="ml-auto">© 2026 PrajaConnect</span>
+        </div>
       </div>
     </div>
   );
