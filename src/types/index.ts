@@ -20,7 +20,10 @@ export interface Politician extends User {
   citizenRating: number; // 0.0 - 5.0
 }
 
-export type IssueCategory = 'Infrastructure' | 'Sanitation' | 'Safety' | 'General';
+export type IssueCategory =
+  | 'Infrastructure' | 'Sanitation' | 'Safety' | 'General'
+  | 'Roads' | 'Water' | 'Electricity' | 'Environment'
+  | 'Transport' | 'Parks' | 'Housing' | 'Education' | 'Health';
 export type IssuePriority = 'Low' | 'Medium' | 'High' | 'Critical';
 export type IssueStatus = 'Pending' | 'In Progress' | 'Resolved' | 'Escalated';
 export type EscalationLevel = 'Normal' | 'Level 1' | 'Level 2' | 'Critical';

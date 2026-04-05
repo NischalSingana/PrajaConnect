@@ -33,7 +33,7 @@ export function DashboardLayout() {
 
   const navItems = [
     { name: 'Dashboard',    icon: LayoutDashboard, path: `/dashboard/${role}`,       group: 'main' },
-    { name: 'Public Feed',  icon: Files,           path: '/issues',                  group: 'main' },
+    { name: 'Public Feed',  icon: Files,           path: '/dashboard/issues',         group: 'main' },
     { name: 'Issue Map',    icon: Map,             path: '/dashboard/map',            group: 'main' },
     { name: 'Notifications',icon: Bell,            path: '/dashboard/notifications',  group: 'main', badge: unreadCount },
     ...(role === 'citizen' ? [

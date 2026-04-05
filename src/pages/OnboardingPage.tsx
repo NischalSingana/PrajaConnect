@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Shield, Activity, Users, Scale } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { cn } from '@/lib/utils';
+import { API_URL } from '@/lib/constants';
 
 export function OnboardingPage() {
   const { user, isLoaded } = useUser();
@@ -23,7 +24,6 @@ export function OnboardingPage() {
 
         // If they have an existing role and no pending role, just redirect
         if (existingRole && !pendingRole) {
-          console.log('User already has a role, redirecting to:', existingRole);
           setStatus('completed');
           setTimeout(() => {
             navigate(`/dashboard/${existingRole}`);
@@ -32,12 +32,7 @@ export function OnboardingPage() {
         }
 
         const roleToSync = pendingRole || existingRole || 'citizen';
-        const apiUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:3001/api/sync-user' 
-          : '/api/sync-user';
-
-        console.log('Initiating sync to:', apiUrl);
-        console.log('Sync payload:', { userId: user.id, role: roleToSync });
+        const apiUrl = `${API_URL}/api/sync-user`;
 
         const response = await fetch(apiUrl, {
           method: 'POST',

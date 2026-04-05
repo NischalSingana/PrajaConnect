@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
 import { ThemeProvider } from './context/ThemeContext';
 import { StoreProvider } from './context/StoreContext';
 
@@ -31,6 +32,12 @@ import { SlaEscalationPage } from './pages/SlaEscalationPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 
+function DashboardIndexRedirect() {
+  const { user } = useUser();
+  const role = (user?.publicMetadata?.role as string) || 'citizen';
+  return <Navigate to={`/dashboard/${role}`} replace />;
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -45,7 +52,7 @@ function App() {
             <Route path="/register/*" element={<RegisterPage />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/issues" element={<div className="p-4 sm:p-8"><PublicIssueFeed /></div>} />
+            <Route path="/issues" element={<PublicIssueFeed />} />
             <Route path="/issues/:id" element={<IssueDetailPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/petitions" element={<PetitionBoardPage />} />
@@ -56,6 +63,7 @@ function App() {
 
           {/* Authenticated Dashboard Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardIndexRedirect />} />
             <Route path="citizen" element={<CitizenDashboard />} />
             <Route path="politician" element={<PoliticianDashboard />} />
             <Route path="moderator" element={<ModeratorDashboard />} />

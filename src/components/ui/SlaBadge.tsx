@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
 interface SlaBadgeProps {
-  deadlineIso: string;
+  deadlineIso: string | null | undefined;
   status: string;
 }
 
@@ -15,26 +15,29 @@ export function SlaBadge({ deadlineIso, status }: SlaBadgeProps) {
   const [isOverdue, setIsOverdue] = useState(false);
 
   useEffect(() => {
-    if (status === 'Resolved' || status === 'Escalated') return;
+    if (status === 'Resolved' || status === 'Escalated' || !deadlineIso) return;
 
     const calculateTimeLeft = () => {
-      const deadline = parseISO(deadlineIso);
-      const overdue = isPast(deadline);
-      setIsOverdue(overdue);
+      try {
+        const deadline = parseISO(deadlineIso);
+        const overdue = isPast(deadline);
+        setIsOverdue(overdue);
 
-      if (overdue) {
-        const hours = Math.abs(differenceInHours(deadline, new Date()));
-        setTimeLeft(`${hours}h Breach`);
-      } else {
-        const hours = differenceInHours(deadline, new Date());
-        const mins = differenceInMinutes(deadline, new Date()) % 60;
-        setTimeLeft(hours > 0 ? `${hours}h Rem.` : `${mins}m Rem.`);
+        if (overdue) {
+          const hours = Math.abs(differenceInHours(deadline, new Date()));
+          setTimeLeft(`${hours}h Breach`);
+        } else {
+          const hours = differenceInHours(deadline, new Date());
+          const mins = differenceInMinutes(deadline, new Date()) % 60;
+          setTimeLeft(hours > 0 ? `${hours}h Rem.` : `${mins}m Rem.`);
+        }
+      } catch {
+        setTimeLeft('');
       }
     };
 
     calculateTimeLeft();
     const interval = setInterval(calculateTimeLeft, 60000);
-
     return () => clearInterval(interval);
   }, [deadlineIso, status]);
 
@@ -54,19 +57,21 @@ export function SlaBadge({ deadlineIso, status }: SlaBadgeProps) {
     );
   }
 
+  if (!deadlineIso || !timeLeft) return null;
+
   return (
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       className="inline-block"
     >
-      <Badge 
+      <Badge
         variant={isOverdue ? 'destructive' : 'outline'}
         className={cn(
-          "font-black text-[9px] uppercase tracking-widest px-4 border-none",
-          isOverdue 
-            ? "bg-red-500/10 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]" 
-            : "bg-amber-500/10 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+          'font-black text-[9px] uppercase tracking-widest px-4 border-none',
+          isOverdue
+            ? 'bg-red-500/10 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+            : 'bg-amber-500/10 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
         )}
       >
         {isOverdue ? <AlertTriangle className="w-3 h-3 mr-1.5" /> : <Clock className="w-3 h-3 mr-1.5" />}

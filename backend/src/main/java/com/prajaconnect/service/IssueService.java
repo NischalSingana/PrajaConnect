@@ -47,6 +47,10 @@ public class IssueService {
         return issueRepository.findByReporterIdOrderByCreatedAtDesc(reporterId);
     }
 
+    public Issue findById(String id) {
+        return findOrThrow(id);
+    }
+
     public void deleteByOwner(String id, String callerId) {
         Issue issue = findOrThrow(id);
         if (!issue.getReporterId().equals(callerId)) {

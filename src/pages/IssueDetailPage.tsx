@@ -5,6 +5,8 @@ import { useLocalStore } from '@/hooks/useLocalStore';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { SlaBadge } from '@/components/ui/SlaBadge';
 import { cn } from '@/lib/utils';
+import { API_URL } from '@/lib/constants';
+import type { Issue } from '@/types';
 import {
   ArrowLeft, ThumbsUp, MapPin, Calendar, Tag, User, Activity,
   CheckCircle2, Clock, AlertTriangle, Megaphone, MessageSquare,
@@ -80,7 +82,7 @@ const tlItem: Variants = {
 export function IssueDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { issues, upvoteIssue } = useLocalStore();
+  const { issues, upvoteIssue, isLoading: storeLoading } = useLocalStore();
   const { isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -90,8 +92,25 @@ export function IssueDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
+  const [fetchedIssue, setFetchedIssue] = useState<Issue | null>(null);
+  const [fetchError, setFetchError] = useState(false);
+  const [fetching, setFetching] = useState(false);
 
-  const issue = issues.find(i => i.id === id);
+  const issue = issues.find(i => i.id === id) ?? fetchedIssue;
+
+  // If the issue isn't in the store (e.g. direct navigation / page refresh),
+  // fetch it directly from the API.
+  useEffect(() => {
+    if (!id || issue) return;
+    if (storeLoading) return; // wait for store to finish first
+
+    setFetching(true);
+    fetch(`${API_URL}/api/issues/${id}`)
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then((data: Issue) => setFetchedIssue(data))
+      .catch(() => setFetchError(true))
+      .finally(() => setFetching(false));
+  }, [id, issue, storeLoading]);
 
   useEffect(() => {
     if (!issue) return;
@@ -99,12 +118,22 @@ export function IssueDetailPage() {
     if (stored) setComments(JSON.parse(stored));
   }, [issue?.id]);
 
+  if (storeLoading || fetching) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
+          <Activity className="h-8 w-8 text-indigo-500" />
+        </motion.div>
+      </div>
+    );
+  }
+
   if (!issue) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center space-y-4">
           <AlertTriangle className="h-12 w-12 text-zinc-700 mx-auto" />
-          <p className="text-zinc-500 font-bold">Issue not found</p>
+          <p className="text-zinc-500 font-bold">{fetchError ? 'Failed to load issue' : 'Issue not found'}</p>
           <Link to="/issues" className="text-indigo-400 text-sm font-bold hover:underline">← Back to feed</Link>
         </div>
       </div>

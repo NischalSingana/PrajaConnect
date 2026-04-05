@@ -52,6 +52,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET,  "/api/health").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/issues").permitAll()
+                .requestMatchers(HttpMethod.GET,  "/api/issues/*").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/stats").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/proxy-image").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/analyze-issue").permitAll()

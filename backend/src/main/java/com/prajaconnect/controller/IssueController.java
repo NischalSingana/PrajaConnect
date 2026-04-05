@@ -30,6 +30,15 @@ public class IssueController {
         return ResponseEntity.ok(issueService.findAll());
     }
 
+    @GetMapping("/issues/{id}")
+    public ResponseEntity<?> getIssueById(@PathVariable String id) {
+        try {
+            return ResponseEntity.ok(issueService.findById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(Map.of("error", "Issue not found"));
+        }
+    }
+
     @GetMapping("/issues/my")
     public ResponseEntity<?> getMyIssues(@AuthenticationPrincipal Jwt jwt) {
         return ResponseEntity.ok(issueService.findByReporter(jwt.getSubject()));
