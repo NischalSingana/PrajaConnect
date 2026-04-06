@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Shield, Activity, Users, Scale } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
@@ -9,6 +9,7 @@ import { API_URL } from '@/lib/constants';
 
 export function OnboardingPage() {
   const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'syncing' | 'completed' | 'error'>('syncing');
   const [error, setError] = useState<string | null>(null);
@@ -34,16 +35,16 @@ export function OnboardingPage() {
         const roleToSync = pendingRole || existingRole || 'citizen';
         const apiUrl = `${API_URL}/api/sync-user`;
 
+        const token = await getToken();
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({
-            userId: user.id,
             email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress || `${user.id}@prajaconnect.local`,
             name: user.fullName || user.username || user.firstName || 'New Citizen',
-            role: roleToSync,
             avatar: user.imageUrl,
           }),
         });

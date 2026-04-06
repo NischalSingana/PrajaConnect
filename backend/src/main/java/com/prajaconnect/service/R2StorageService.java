@@ -46,6 +46,10 @@ public class R2StorageService {
 
     @PostConstruct
     public void init() {
+        if (accountId.isBlank() || accessKeyId.isBlank() || secretAccessKey.isBlank()) {
+            // R2 not configured; upload/download endpoints will return errors at call time
+            return;
+        }
         s3 = S3Client.builder()
             .region(Region.of("auto"))
             .endpointOverride(java.net.URI.create("https://" + accountId + ".r2.cloudflarestorage.com"))
@@ -56,6 +60,8 @@ public class R2StorageService {
     }
 
     public String upload(MultipartFile file) throws Exception {
+        if (s3 == null) throw new IllegalStateException("R2 storage is not configured");
+
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_MIME.contains(contentType)) {
             throw new IllegalArgumentException(
@@ -85,6 +91,7 @@ public class R2StorageService {
     }
 
     public byte[] fetchBytes(String url) throws Exception {
+        if (publicUrl.isBlank()) throw new IllegalStateException("R2 storage is not configured");
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);

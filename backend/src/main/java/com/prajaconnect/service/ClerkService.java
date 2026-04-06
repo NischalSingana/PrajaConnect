@@ -12,7 +12,7 @@ import java.util.Map;
 @Service
 public class ClerkService {
 
-    @Value("${clerk.secret-key}")
+    @Value("${clerk.secret-key:}")
     private String secretKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
