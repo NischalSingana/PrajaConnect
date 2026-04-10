@@ -46,6 +46,7 @@ export function OnboardingPage() {
             email: user.primaryEmailAddress?.emailAddress || user.emailAddresses[0]?.emailAddress || `${user.id}@prajaconnect.local`,
             name: user.fullName || user.username || user.firstName || 'New Citizen',
             avatar: user.imageUrl,
+            role: roleToSync,
           }),
         });
 
@@ -62,7 +63,8 @@ export function OnboardingPage() {
         setStatus('completed');
         
         // Wait a beat for the animation
-        setTimeout(() => {
+        setTimeout(async () => {
+          await user.reload();
           navigate(`/dashboard/${roleToSync}`);
         }, 2000);
       } catch (err) {
@@ -75,7 +77,7 @@ export function OnboardingPage() {
     if (isLoaded && user) {
       syncUser();
     }
-  }, [isLoaded, user, navigate]);
+  }, [isLoaded, user, navigate, getToken]);
 
   const getRoleInfo = (role: string) => {
     switch(role) {

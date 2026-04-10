@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Set;
 import java.util.UUID;
 
@@ -92,7 +91,7 @@ public class R2StorageService {
 
     public byte[] fetchBytes(String url) throws Exception {
         if (publicUrl.isBlank()) throw new IllegalStateException("R2 storage is not configured");
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) java.net.URI.create(url).toURL().openConnection();
         conn.setConnectTimeout(CONNECT_TIMEOUT);
         conn.setReadTimeout(READ_TIMEOUT);
         conn.connect();

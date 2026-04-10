@@ -73,13 +73,23 @@ public class UserService {
         return target;
     }
 
-    public User syncUser(String userId, String email, String name, String avatar) {
+    public User syncUser(String userId, String email, String name, String avatar, String role) {
         User user = userRepository.findById(userId).orElse(new User());
         user.setId(userId);
         if (name   != null) user.setName(name);
         if (email  != null) user.setEmail(email);
         if (avatar != null) user.setAvatar(avatar);
-        if (user.getRole() == null) user.setRole("citizen");
+        
+        if (role != null && !role.equals(user.getRole())) {
+            user.setRole(role);
+            try { clerkService.updateUserMetadata(userId, Map.of("role", role)); }
+            catch (Exception ignored) {}
+        } else if (user.getRole() == null) {
+            user.setRole("citizen");
+            try { clerkService.updateUserMetadata(userId, Map.of("role", "citizen")); }
+            catch (Exception ignored) {}
+        }
+        
         userRepository.save(user);
         return user;
     }

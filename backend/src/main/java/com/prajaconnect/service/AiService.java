@@ -59,7 +59,7 @@ public class AiService {
         );
 
         String content = response.getBody().path("choices").get(0).path("message").path("content").asText("{}");
-        Map<String, Object> parsed = objectMapper.readValue(content, Map.class);
+        Map<String, Object> parsed = objectMapper.readValue(content, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
         parsed = new java.util.HashMap<>(parsed);
         parsed.put("model", "Groq Llama-3.3-70B");
         return parsed;
@@ -81,7 +81,7 @@ public class AiService {
         );
 
         String text = response.getBody().path("candidates").get(0).path("content").path("parts").get(0).path("text").asText("{}");
-        Map<String, Object> parsed = objectMapper.readValue(text, Map.class);
+        Map<String, Object> parsed = objectMapper.readValue(text, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
         parsed = new java.util.HashMap<>(parsed);
         parsed.put("model", "Gemini 1.5-Flash");
         return parsed;

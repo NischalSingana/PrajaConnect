@@ -6,11 +6,12 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 import { SlaBadge } from '@/components/ui/SlaBadge';
 import { cn } from '@/lib/utils';
 import { API_URL } from '@/lib/constants';
-import type { Issue } from '@/types';
+import type { Issue, IssueStatus } from '@/types';
 import {
   ArrowLeft, ThumbsUp, MapPin, Calendar, Tag, User, Activity,
   CheckCircle2, Clock, AlertTriangle, Megaphone, MessageSquare,
-  Share2, Flag, ExternalLink, Send, Loader2, Image as ImageIcon, Star
+  Share2, Flag, ExternalLink, Send, Loader2, Image as ImageIcon, Star,
+  ShieldCheck
 } from 'lucide-react';
 
 const STATUS_STYLES: Record<string, { badge: string; glow: string; label: string }> = {
@@ -82,7 +83,7 @@ const tlItem: Variants = {
 export function IssueDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { issues, upvoteIssue, isLoading: storeLoading } = useLocalStore();
+  const { issues, upvoteIssue, updateIssueStatus, isLoading: storeLoading } = useLocalStore();
   const { isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -95,8 +96,29 @@ export function IssueDetailPage() {
   const [fetchedIssue, setFetchedIssue] = useState<Issue | null>(null);
   const [fetchError, setFetchError] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [markingComplete, setMarkingComplete] = useState(false);
+  const [completedLocally, setCompletedLocally] = useState(false);
 
   const issue = issues.find(i => i.id === id) ?? fetchedIssue;
+
+  // Role-based permission: only officials can mark completed
+  const userRole = user?.publicMetadata?.role as string | undefined;
+  const isOfficial = ['politician', 'moderator', 'admin'].includes(userRole ?? '');
+
+  // Detect if SLA deadline has passed but issue NOT resolved
+  const slaDeadlinePassed = issue?.slaDeadline
+    ? new Date(issue.slaDeadline).getTime() < Date.now()
+    : false;
+  const isPendingOrActive = issue ? ['Pending', 'In Progress', 'Escalated'].includes(issue.status) : false;
+  const showOverdueWarning = slaDeadlinePassed && isPendingOrActive && !completedLocally;
+
+  const handleMarkCompleted = async () => {
+    if (!issue || markingComplete) return;
+    setMarkingComplete(true);
+    await updateIssueStatus(issue.id, 'Resolved' as IssueStatus);
+    setCompletedLocally(true);
+    setMarkingComplete(false);
+  };
 
   // If the issue isn't in the store (e.g. direct navigation / page refresh),
   // fetch it directly from the API.
@@ -249,6 +271,52 @@ export function IssueDetailPage() {
           className="space-y-8"
         >
 
+          {/* Overdue warning banner — SLA passed, NOT auto-completed */}
+          {showOverdueWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative p-5 rounded-2xl border border-red-500/25 bg-red-500/[0.06] flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="shrink-0 h-9 w-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4 text-red-400" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-red-300">SLA Deadline Passed</p>
+                  <p className="text-[10px] text-red-500/70 font-medium mt-0.5">
+                    The resolution deadline for this issue has expired. It has <span className="font-black text-red-400">NOT</span> been marked completed — an official must do so manually.
+                  </p>
+                </div>
+              </div>
+              {isOfficial && (
+                <button
+                  onClick={handleMarkCompleted}
+                  disabled={markingComplete}
+                  className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-emerald-600/20"
+                >
+                  {markingComplete ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                  Mark Completed
+                </button>
+              )}
+            </motion.div>
+          )}
+
+          {/* Resolved success banner */}
+          {(issue.status === 'Resolved' || completedLocally) && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] flex items-center gap-3"
+            >
+              <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-sm font-black text-emerald-300">Issue Resolved</p>
+                <p className="text-[10px] text-emerald-500/70 font-medium">This issue has been officially marked as completed by an authority.</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* Hero section */}
           <div className={cn(
             'relative p-8 sm:p-10 rounded-[2.5rem] border overflow-hidden',
@@ -332,8 +400,19 @@ export function IssueDetailPage() {
                   <MessageSquare className="h-3.5 w-3.5" />
                   {comments.length} comment{comments.length !== 1 ? 's' : ''}
                 </div>
-                <div className="ml-auto">
-                  <SlaBadge deadlineIso={issue.slaDeadline} status={issue.status} />
+                <div className="ml-auto flex items-center gap-2">
+                  <SlaBadge deadlineIso={issue.slaDeadline} status={completedLocally ? 'Resolved' : issue.status} />
+                  {/* Mark Completed button — only for officials, only on non-resolved issues */}
+                  {isOfficial && !completedLocally && issue.status !== 'Resolved' && (
+                    <button
+                      onClick={handleMarkCompleted}
+                      disabled={markingComplete}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-emerald-500/25 bg-emerald-500/8 text-emerald-400 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/15 hover:border-emerald-500/40 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                      {markingComplete ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                      Mark Completed
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

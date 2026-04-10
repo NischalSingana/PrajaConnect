@@ -1,7 +1,6 @@
 package com.prajaconnect.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ public class ClerkService {
     private String secretKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String CLERK_API = "https://api.clerk.com/v1";
 
