@@ -56,7 +56,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,  "/api/stats").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/proxy-image").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/analyze-issue").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
 
