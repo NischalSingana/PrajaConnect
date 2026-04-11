@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { Award, TrendingUp, CheckCircle2, Users, Star, Activity, Crown, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -49,7 +49,7 @@ function AvatarLetter({ name }: { name: string }) {
 }
 
 export function LeaderboardPage() {
-  const { issues, stats } = useLocalStore();
+  const { issues, stats } = useStore();
   const [tab, setTab] = useState<Tab>('citizens');
 
   /* Derive citizen leaderboard from real issue data */

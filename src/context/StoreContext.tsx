@@ -14,7 +14,7 @@ interface StoreContextType {
   updateIssueStatus: (id: string, status: Issue['status']) => Promise<void>;
   respondToIssue: (id: string, response: string) => Promise<boolean>;
   flagIssue: (id: string, flagged: boolean, reason?: string) => Promise<boolean>;
-  fetchUsers: () => Promise<any[]>;
+  fetchUsers: () => Promise<{ id: string; name: string; email: string; role: string; avatar?: string; createdAt: string }[]>;
   changeUserRole: (targetUserId: string, role: string) => Promise<boolean>;
   markNotificationRead: (id: string) => Promise<void>;
   markAllNotificationsRead: () => Promise<void>;

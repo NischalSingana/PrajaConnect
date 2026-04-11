@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { useAuth } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { SlaBadge } from '@/components/ui/SlaBadge';
@@ -76,7 +76,7 @@ function IssueCardSkeleton() {
 }
 
 export function PublicIssueFeed() {
-  const { issues, isLoading, upvoteIssue, stats } = useLocalStore();
+  const { issues, isLoading, upvoteIssue, stats } = useStore();
   const { isSignedIn } = useAuth();
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 250);

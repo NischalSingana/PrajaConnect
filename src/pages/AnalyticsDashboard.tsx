@@ -5,7 +5,7 @@ import {
   PieChart, Pie, Cell, Legend, BarChart, Bar
 } from 'recharts';
 import { Target, TrendingUp, Users, AlertTriangle, Activity, Globe, CheckCircle2, Zap } from 'lucide-react';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 
 const container: Variants = {
@@ -43,7 +43,7 @@ function StatCard({ label, value, sub, icon, accent, trend }: {
 }
 
 export function AnalyticsDashboard() {
-  const { issues, stats } = useLocalStore();
+  const { issues, stats } = useStore();
 
   /* ── Derived real data ── */
   const categoryData = useMemo(() => {

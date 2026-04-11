@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +37,7 @@ interface DBUser {
 }
 
 export function AdminDashboard() {
-  const { stats, fetchUsers, changeUserRole, refreshData } = useLocalStore();
+  const { stats, fetchUsers, changeUserRole, refreshData } = useStore();
   const { user } = useUser();
   const navigate = useNavigate();
   const [dbUsers, setDbUsers] = useState<DBUser[]>([]);

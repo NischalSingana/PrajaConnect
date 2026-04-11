@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Clock, TrendingUp, MapPin, ArrowUpRight, Activity } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -38,7 +38,7 @@ const ESCALATION_COLOR: Record<string, string> = {
 };
 
 export function SlaEscalationPage() {
-  const { issues, isLoading } = useLocalStore();
+  const { issues, isLoading } = useStore();
   const [tab, setTab] = useState<FilterTab>('all');
 
   const actionable = issues.filter(i => i.status !== 'Resolved');

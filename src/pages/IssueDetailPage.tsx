@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import { SlaBadge } from '@/components/ui/SlaBadge';
 import { cn } from '@/lib/utils';
@@ -83,7 +83,7 @@ const tlItem: Variants = {
 export function IssueDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { issues, upvoteIssue, updateIssueStatus, isLoading: storeLoading } = useLocalStore();
+  const { issues, upvoteIssue, updateIssueStatus, isLoading: storeLoading } = useStore();
   const { isSignedIn } = useAuth();
   const { user } = useUser();
 
@@ -138,6 +138,7 @@ export function IssueDetailPage() {
     if (!issue) return;
     const stored = localStorage.getItem(`comments_${issue.id}`);
     if (stored) setComments(JSON.parse(stored));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [issue?.id]);
 
   if (storeLoading || fetching) {

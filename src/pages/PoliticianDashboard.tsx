@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { useUser } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { SlaBadge } from '../components/ui/SlaBadge';
@@ -24,7 +24,7 @@ const statusColor = (s: string) => ({
 }[s] ?? 'border-white/10 bg-white/5 text-zinc-400');
 
 export function PoliticianDashboard() {
-  const { issues, updateIssueStatus, respondToIssue } = useLocalStore();
+  const { issues, updateIssueStatus, respondToIssue } = useStore();
   const { user } = useUser();
 
   const [filterStatus, setFilterStatus] = useState<string>('All');

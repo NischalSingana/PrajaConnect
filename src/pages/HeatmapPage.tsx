@@ -1,5 +1,5 @@
 import { motion, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { MapPin, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 import { useMemo, useEffect } from 'react';
 import { Issue } from '@/types';
@@ -44,7 +44,7 @@ const PRIORITY_BAR: Record<string, string> = {
 };
 
 export function HeatmapPage() {
-  const { issues, isLoading } = useLocalStore();
+  const { issues, isLoading } = useStore();
 
   const positioned = useMemo(() =>
     issues.filter(i => i.lat != null && i.lng != null),

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import {
   LayoutDashboard, Files, User, Settings, Users,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { NotificationBell } from '../ui/NotificationBell';
-import { useUser, UserButton, useClerk } from '@clerk/clerk-react';
+import { useUser, UserButton, useClerk, useAuth } from '@clerk/clerk-react';
 import { useStore } from '../../context/StoreContext';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 
@@ -20,6 +20,7 @@ const ROLE_COLORS: Record<string, { badge: string; dot: string; label: string }>
 };
 
 export function DashboardLayout() {
+  const { isSignedIn, isLoaded } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -33,6 +34,11 @@ export function DashboardLayout() {
   const { user } = useUser();
   const { signOut } = useClerk();
   const { notifications, user: storeUser } = useStore();
+
+  // Redirect unauthenticated users to login
+  if (isLoaded && !isSignedIn) {
+    return <Navigate to="/login" replace />;
+  }
 
   const role = storeUser?.role || (user?.publicMetadata?.role as string) || 'citizen';
   const roleStyle = ROLE_COLORS[role] ?? ROLE_COLORS.citizen;

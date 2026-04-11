@@ -9,12 +9,12 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { RoleSelectionModal } from '../components/auth/RoleSelectionModal';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
 export function LandingPage() {
-  const { stats } = useLocalStore();
+  const { stats } = useStore();
   const { isSignedIn } = useAuth();
   const { user } = useUser();
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);

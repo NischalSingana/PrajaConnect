@@ -4,7 +4,7 @@ import { X, Bot, MapPin, Camera, ArrowRight, ArrowLeft, Upload, Loader2, Cpu, Sc
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { API_URL } from '@/lib/constants';
 import { IssueCategory, IssuePriority } from '@/types';
 import { useAuth, useUser } from '@clerk/clerk-react';
@@ -17,7 +17,7 @@ interface ReportIssueModalProps {
 }
 
 export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
-  const { addIssue } = useLocalStore();
+  const { addIssue } = useStore();
   const { getToken, isLoaded, userId: authUserId } = useAuth();
   const { user, isLoaded: userLoaded } = useUser();
   const userId = user?.id || authUserId || null;

@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from './Button';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, markNotificationRead, markAllNotificationsRead } = useLocalStore();
+  const { notifications, markNotificationRead, markAllNotificationsRead } = useStore();
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const handleMarkAllRead = () => {

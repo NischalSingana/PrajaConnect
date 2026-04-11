@@ -4,7 +4,7 @@ import { Target, Users, Globe, Award, Heart, Shield, Zap, ArrowRight, Scale, Act
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -14,7 +14,7 @@ gsap.registerPlugin(ScrollTrigger);
 const ABOUT_IMAGE = '/images/about_hero.png';
 
 export function AboutPage() {
-  const { stats } = useLocalStore();
+  const { stats } = useStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

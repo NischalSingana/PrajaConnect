@@ -12,6 +12,20 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-clerk': ['@clerk/clerk-react'],
+          'vendor-charts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-map': ['leaflet', 'react-leaflet'],
+          'vendor-three': ['three', '@react-three/fiber', '@react-three/drei'],
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       '/api': {

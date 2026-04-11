@@ -69,7 +69,7 @@ export function OnboardingPage() {
 
         // Wait a beat for the animation, then redirect
         setTimeout(async () => {
-          try { await user.reload(); } catch {}
+          try { await user.reload(); } catch { /* reload is best-effort */ }
           window.location.href = `/dashboard/${roleToSync}`;
         }, 2000);
       } catch (err) {

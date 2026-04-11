@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { useLocalStore } from '@/hooks/useLocalStore';
+import { useStore } from '@/context/StoreContext';
 import { cn } from '@/lib/utils';
 import { Shield, Flag, CheckCircle, Activity, Search, AlertTriangle, X, Loader2, PlayCircle, ShieldBan, Bot, Zap } from 'lucide-react';
 
@@ -15,7 +15,7 @@ const priorityColor = (level: string) => ({
 }[level] ?? 'border-white/10 bg-white/5 text-zinc-500');
 
 export function ModeratorDashboard() {
-  const { issues, updateIssueStatus, flagIssue } = useLocalStore();
+  const { issues, updateIssueStatus, flagIssue } = useStore();
   const [search, setSearch] = useState('');
   const [actionId, setActionId] = useState<string | null>(null);
   const [flagModalId, setFlagModalId] = useState<string | null>(null);
