@@ -25,7 +25,9 @@ public class NotificationController {
     @GetMapping("/notifications")
     public ResponseEntity<?> getNotifications(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();
-        userService.getOrCreate(userId);
+        if (userService.findById(userId).isEmpty()) {
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        }
         return ResponseEntity.ok(notificationRepository.findByUserIdOrderByCreatedAtDesc(userId));
     }
 
