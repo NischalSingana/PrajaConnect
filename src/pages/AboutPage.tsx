@@ -107,7 +107,7 @@ export function AboutPage() {
         </div>
       </section>
 
-      <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-32 pb-32">
+      <div className="container mx-auto px-6 -mt-16 relative z-20 space-y-32 pb-12">
         {/* Mission Card */}
         <section className="about-section">
           <Card className="max-w-6xl mx-auto border-white/10 bg-zinc-950/50 backdrop-blur-3xl overflow-hidden rounded-3xl">
@@ -248,10 +248,6 @@ export function AboutPage() {
               </div>
            </div>
         </section>
-
-        {/* Footer Links */}
-        <footer className="about-section text-center pt-20 border-t border-white/5">
-        </footer>
       </div>
     </div>
   );

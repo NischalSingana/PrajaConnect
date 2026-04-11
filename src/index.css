@@ -175,6 +175,7 @@ body {
 }
 
 /* Custom scrollbar for modals */
+/* Custom scrollbar for modals */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
@@ -183,3 +184,33 @@ body {
   border-radius: 10px;
 }
 
+/* React-Leaflet Overrides for Dark Mode */
+.leaflet-container {
+  background: var(--bg-color) !important;
+  border-radius: inherit;
+  z-index: 10 !important;
+  font-family: inherit !important;
+}
+
+.leaflet-layer,
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out,
+.leaflet-control-attribution {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.leaflet-control-attribution a {
+  color: #a78bfa !important;
+}
+
+.leaflet-top, .leaflet-bottom {
+  z-index: 20 !important;
+}
+
+.custom-map-marker {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: none !important;
+}

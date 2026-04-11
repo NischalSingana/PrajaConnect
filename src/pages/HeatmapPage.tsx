@@ -4,6 +4,9 @@ import { MapPin, Activity, TrendingUp, AlertCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import { Issue } from '@/types';
 import { cn } from '@/lib/utils';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -14,15 +17,9 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
-const LAT_MIN = 8, LAT_MAX = 35;
-const LNG_MIN = 68, LNG_MAX = 97;
-
-function normalizeCoords(lat: number, lng: number) {
-  return {
-    x: ((lng - LNG_MIN) / (LNG_MAX - LNG_MIN)) * 100,
-    y: (1 - (lat - LAT_MIN) / (LAT_MAX - LAT_MIN)) * 100,
-  };
-}
+// Initial map view: Centered mostly on India bounds
+const MAP_CENTER: [number, number] = [20.5937, 78.9629];
+const MAP_ZOOM = 4;
 
 const STATUS_COLOR: Record<string, string> = {
   Resolved: 'bg-emerald-500',
@@ -42,11 +39,19 @@ export function HeatmapPage() {
   const { issues, isLoading } = useLocalStore();
 
   const positioned = useMemo(() =>
-    issues
-      .filter(i => i.lat != null && i.lng != null)
-      .map(i => ({ ...i, pos: normalizeCoords(i.lat!, i.lng!) })),
+    issues.filter(i => i.lat != null && i.lng != null),
     [issues]
   );
+  
+  const getCustomIcon = (status: string) => {
+    const bg = STATUS_COLOR[status] ?? 'bg-zinc-500';
+    return L.divIcon({
+      className: 'custom-map-marker',
+      html: `<div class="h-4 w-4 rounded-full ${bg} shadow-[0_0_15px_rgba(0,0,0,0.5)] border-2 border-white/20 animate-pulse"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    });
+  };
 
   const byLocation = useMemo(() => {
     const map: Record<string, Issue[]> = {};
@@ -112,37 +117,43 @@ export function HeatmapPage() {
               </div>
             </div>
 
-            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#0a0a10] border border-white/[0.03]">
-              {[...Array(5)].map((_, i) => (
-                <div key={`h${i}`} className="absolute w-full border-t border-white/[0.02]" style={{ top: `${(i + 1) * 16.66}%` }} />
-              ))}
-              {[...Array(5)].map((_, i) => (
-                <div key={`v${i}`} className="absolute h-full border-l border-white/[0.02]" style={{ left: `${(i + 1) * 16.66}%` }} />
-              ))}
-              {positioned.length === 0 ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-zinc-700">
-                  <MapPin className="h-10 w-10" />
-                  <p className="text-xs font-bold uppercase tracking-widest">No GPS coordinate data yet</p>
-                </div>
-              ) : (
-                positioned.map(issue => (
-                  <motion.div
-                    key={issue.id}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    title={`${issue.title} — ${issue.status}`}
-                    style={{ left: `${issue.pos.x}%`, top: `${issue.pos.y}%` }}
-                    className={cn(
-                      'absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full cursor-pointer hover:scale-150 transition-transform shadow-lg',
-                      STATUS_COLOR[issue.status] ?? 'bg-zinc-500'
-                    )}
-                  />
-                ))
-              )}
+            <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[#0a0a1a] border border-white/[0.03]">
+              <MapContainer 
+                center={MAP_CENTER} 
+                zoom={MAP_ZOOM} 
+                scrollWheelZoom={false}
+                className="h-full w-full absolute inset-0 !bg-[#020202]"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                
+                {positioned.map(issue => (
+                  <Marker 
+                    key={issue.id} 
+                    position={[issue.lat!, issue.lng!]}
+                    icon={getCustomIcon(issue.status)}
+                  >
+                    <Popup className="custom-popup">
+                      <div className="text-zinc-900 !m-0 !p-1 max-w-[200px]">
+                        <h4 className="font-black text-sm mb-1 leading-tight">{issue.title}</h4>
+                        <div className="flex gap-2 text-[10px] uppercase font-bold tracking-wider mb-2">
+                           <span className={cn(
+                             issue.priority === 'Critical' ? 'text-red-500' : 
+                             issue.priority === 'High' ? 'text-orange-500' : 'text-zinc-500'
+                           )}>{issue.priority} Priority</span>
+                        </div>
+                        <p className="text-xs font-medium text-zinc-600 line-clamp-2">{issue.description}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
             </div>
 
             <p className="text-[9px] text-zinc-700 font-bold uppercase tracking-widest text-center">
-              {positioned.length} of {issues.length} issues plotted · India bounding box (approx.)
+              {positioned.length} of {issues.length} issues currently active in geographic space.
             </p>
           </div>
         </motion.div>
