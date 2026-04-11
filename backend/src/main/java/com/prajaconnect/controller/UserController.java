@@ -28,7 +28,6 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<?> allUsers(@AuthenticationPrincipal Jwt jwt) {
-        userService.getOrCreate(jwt.getSubject());
         return ResponseEntity.ok(userService.findAll());
     }
 
