@@ -56,6 +56,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET,  "/api/stats").permitAll()
                 .requestMatchers(HttpMethod.GET,  "/api/proxy-image").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/analyze-issue").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll()
             )
