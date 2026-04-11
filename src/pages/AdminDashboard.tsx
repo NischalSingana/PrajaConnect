@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useLocalStore } from '@/hooks/useLocalStore';
 import { cn } from '@/lib/utils';
+import { useUser } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 import { Users, ShieldAlert, Activity, UserCog, Search, ChevronDown, Loader2, RefreshCw, Radio, Send, Database, Network } from 'lucide-react';
 
@@ -35,7 +37,9 @@ interface DBUser {
 }
 
 export function AdminDashboard() {
-  const { stats, fetchUsers, changeUserRole } = useLocalStore();
+  const { stats, fetchUsers, changeUserRole, refreshData } = useLocalStore();
+  const { user } = useUser();
+  const navigate = useNavigate();
   const [dbUsers, setDbUsers] = useState<DBUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [search, setSearch] = useState('');
@@ -93,7 +97,14 @@ export function AdminDashboard() {
   const handleRoleChange = async (userId: string, newRole: Role) => {
     setUpdatingId(userId);
     const ok = await changeUserRole(userId, newRole);
-    if (ok) setDbUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    if (ok) {
+      setDbUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      if (user && user.id === userId) {
+         await user.reload(); // Force Clerk to fetch the new token with updated publicMetadata
+         await refreshData();
+         navigate(`/dashboard/${newRole}`);
+      }
+    }
     setUpdatingId(null);
   };
 
