@@ -192,6 +192,10 @@ body {
   font-family: inherit !important;
 }
 
+.leaflet-layer {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%) saturate(200%);
+}
+
 .leaflet-control-attribution {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
