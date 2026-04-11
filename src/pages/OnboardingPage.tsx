@@ -27,7 +27,7 @@ export function OnboardingPage() {
         if (existingRole && !pendingRole) {
           setStatus('completed');
           setTimeout(() => {
-            navigate(`/dashboard/${existingRole}`);
+            window.location.href = `/dashboard/${existingRole}`;
           }, 1500);
           return;
         }
@@ -65,7 +65,7 @@ export function OnboardingPage() {
         // Wait a beat for the animation
         setTimeout(async () => {
           await user.reload();
-          navigate(`/dashboard/${roleToSync}`);
+          window.location.href = `/dashboard/${roleToSync}`;
         }, 2000);
       } catch (err) {
         console.error('Onboarding sync error:', err);
