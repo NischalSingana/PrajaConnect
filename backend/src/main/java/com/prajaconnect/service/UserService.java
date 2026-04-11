@@ -34,6 +34,11 @@ public class UserService {
                 if (name.isEmpty()) name = "User";
                 String avatar = clerkUser.path("image_url").asText(null);
 
+                // Re-check: another thread (e.g. syncUser) may have created the user
+                // while we were calling the slow Clerk API
+                Optional<User> recheck = userRepository.findById(userId);
+                if (recheck.isPresent()) return recheck.get();
+
                 User user = new User();
                 user.setId(userId);
                 user.setName(name);
