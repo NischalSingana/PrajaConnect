@@ -45,12 +45,14 @@ export function PoliticianDashboard() {
   
   const urgentIssues = issues.filter(i => i.status !== 'Resolved' && i.escalationLevel !== 'Normal').slice(0, 4);
 
-  // Mock Sentiment derived from issues
+  // Real Sentiment derived securely from actual DB events
   const sentiment = useMemo(() => {
-    const positiveMock = resolved * 2 + issues.filter(i => i.upvotes > 5).length;
-    const negMock = escalated * 3 + pending;
-    const totalSent = Math.max(1, positiveMock + negMock);
-    return Math.round((positiveMock / totalSent) * 100);
+    if (issues.length === 0) return 100;
+    const positiveVotes = issues.filter(i => i.upvotes > 0).length;
+    const positiveMetrics = resolved + positiveVotes;
+    const negativeMetrics = escalated + pending;
+    const totalSent = positiveMetrics + negativeMetrics || 1;
+    return Math.round((positiveMetrics / totalSent) * 100);
   }, [resolved, escalated, pending, issues]);
 
   const chartData = useMemo(() => {
@@ -184,7 +186,7 @@ export function PoliticianDashboard() {
       {/* Core Insights & Activity */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Urgent Issues Feed - Live action */}
-        <motion.div variants={item} className="lg:col-span-1 p-8 rounded-[2.5rem] bg-zinc-950 border border-red-500/10 relative overflow-hidden group">
+        <motion.div variants={item} className="lg:col-span-1 p-8 rounded-[2.5rem] bg-zinc-950/80 backdrop-blur-2xl border border-red-500/10 relative overflow-hidden group hover:border-red-500/30 transition-all duration-500 hover:shadow-[0_0_40px_rgba(239,68,68,0.1)]">
           <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-red-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
           <div className="flex items-center justify-between mb-6">
              <h3 className="text-lg font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -220,8 +222,8 @@ export function PoliticianDashboard() {
         {/* Dynamic Analytics area */}
         <motion.div variants={item} className="lg:col-span-2 grid gap-6 grid-cols-2">
            {/* Sentiment Analyzer */}
-           <div className="col-span-2 sm:col-span-1 p-8 rounded-[2.5rem] bg-zinc-950 border border-white/5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Activity className="h-24 w-24" /></div>
+           <div className="col-span-2 sm:col-span-1 p-8 rounded-[2.5rem] bg-zinc-950/80 backdrop-blur-2xl border border-white/5 hover:border-white/10 transition-all duration-500 hover:shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:scale-110 group-hover:opacity-20 transition-all duration-700"><Activity className="h-24 w-24" /></div>
               <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Constituency Sentiment</p>
               <h2 className="text-4xl font-black text-white tracking-tight mb-6">{sentiment}% <span className="text-lg text-emerald-400">+</span></h2>
               <div className="space-y-2">
@@ -239,14 +241,14 @@ export function PoliticianDashboard() {
 
            {/* Metrics Grid inside */}
            <div className="col-span-2 sm:col-span-1 grid grid-rows-2 gap-6">
-              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-indigo-900/20 to-transparent border border-indigo-500/10 flex flex-col justify-center">
+              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-indigo-900/20 to-zinc-900/40 backdrop-blur-xl border border-indigo-500/10 flex flex-col justify-center hover:border-indigo-500/20 hover:shadow-[0_0_30px_rgba(79,70,229,0.1)] transition-all duration-500">
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Clearance Rate</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black text-white">{resolutionRate}%</span>
                   <span className="text-xs font-bold text-zinc-500">Vol. {total}</span>
                 </div>
               </div>
-              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-amber-900/10 to-transparent border border-amber-500/10 flex flex-col justify-center">
+              <div className="p-6 rounded-[2rem] bg-gradient-to-br from-amber-900/10 to-zinc-900/40 backdrop-blur-xl border border-amber-500/10 flex flex-col justify-center hover:border-amber-500/20 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] transition-all duration-500">
                 <p className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] mb-1">Active Engagements</p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-3xl font-black text-white">{inProgress}</span>
@@ -258,7 +260,7 @@ export function PoliticianDashboard() {
       </div>
 
       {/* Wide Graph */}
-      <motion.div variants={item} className="p-8 lg:p-10 rounded-[2.5rem] bg-zinc-950 border border-white/[0.05] shadow-2xl relative overflow-hidden">
+      <motion.div variants={item} className="p-8 lg:p-10 rounded-[2.5rem] bg-zinc-950/80 backdrop-blur-2xl border border-white/[0.05] shadow-2xl relative overflow-hidden hover:border-white/10 transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,0,0,0.5)]">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-32 bg-emerald-600/5 blur-[80px]" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 relative z-10">
           <div>

@@ -256,11 +256,15 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
       let category: IssueCategory = 'General';
       let priority: IssuePriority = 'Medium';
 
-      if (text.includes('pothole') || text.includes('road')) { category = 'Infrastructure'; priority = 'High'; }
+      if (text.includes('pothole') || text.includes('road')) { category = 'Roads'; priority = 'High'; }
       else if (text.includes('garbage')) { category = 'Sanitation'; priority = 'Medium'; }
-      else if (text.includes('light')) { category = 'Safety'; priority = 'High'; }
+      else if (text.includes('light')) { category = 'Electricity'; priority = 'Low'; }
+      else if (text.includes('water')) { category = 'Water'; priority = 'High'; }
+      else if (text.includes('noise')) { category = 'Noise Complaint'; priority = 'Low'; }
+      else if (text.includes('animal') || text.includes('dog')) { category = 'Animal Control'; priority = 'Medium'; }
+      else if (text.includes('pollution') || text.includes('smoke')) { category = 'Pollution'; priority = 'Medium'; }
 
-      setAiResult({ category, confidence: 85, priority });
+      setAiResult({ category, confidence: 85, priority, model: 'Fallback Regex Classifier' });
       setIsAnalyzing(false);
       setStep(2);
     }
@@ -436,30 +440,46 @@ export function ReportIssueModal({ isOpen, onClose }: ReportIssueModalProps) {
                       </div>
                     </div>
 
-                    <div className="space-y-4 text-center relative z-10">
-                      <div className="flex flex-col items-center gap-2">
-                        <Badge variant="outline" className="px-3 py-0.5 border-indigo-500/30 text-indigo-400 text-[8px] font-black uppercase tracking-[0.2em] bg-indigo-500/5">
-                          Neural Engine Active
+                    <div className="space-y-6 text-center relative z-10 w-full max-w-sm mx-auto">
+                      <div className="flex flex-col items-center gap-3">
+                        <Badge variant="outline" className="px-4 py-1 border-indigo-500/30 text-indigo-400 text-[9px] font-black uppercase tracking-[0.2em] bg-indigo-500/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                          Nexus Core Active
                         </Badge>
-                        <h3 className="text-xl font-black text-white uppercase tracking-[0.3em] animate-pulse">Initializing AI analysis</h3>
+                        <h3 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 uppercase tracking-[0.3em] animate-pulse">Neural Mapping</h3>
                       </div>
-                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] max-w-[280px] leading-relaxed mx-auto">
-                        Extracting patterns from description, location data, and visual proof...
-                      </p>
+                      
+                      <div className="space-y-4 bg-black/40 backdrop-blur-md border border-white/[0.05] p-6 rounded-3xl mt-4">
+                        {[
+                          { label: 'Ingesting geographical coordinate arrays', delay: 0 },
+                          { label: 'Parsing contextual priority signatures', delay: 0.4 },
+                          { label: 'Running predictive department routing', delay: 0.8 }
+                        ].map((item, idx) => (
+                           <motion.div 
+                             key={idx}
+                             initial={{ opacity: 0, x: -10 }}
+                             animate={{ opacity: 1, x: 0 }}
+                             transition={{ delay: item.delay, duration: 0.5 }}
+                             className="flex items-center gap-4 text-left"
+                           >
+                              <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_10px_rgba(99,102,241,0.8)]" />
+                              <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest leading-relaxed">{item.label}</span>
+                           </motion.div>
+                        ))}
+                      </div>
                     </div>
 
-                    {/* Fake Data Readout */}
-                    <div className="grid grid-cols-2 gap-8 w-full max-w-xs mt-4">
+                    {/* AI Engine Readout */}
+                    <div className="grid grid-cols-2 gap-8 w-full max-w-xs mt-2 relative z-10">
                       <div className="space-y-1">
                         <div className="text-[8px] font-black text-zinc-600 tracking-widest uppercase mb-1">Status</div>
                         <div className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <span className="h-1 w-1 rounded-full bg-emerald-400 animate-ping" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
                           Processing
                         </div>
                       </div>
                       <div className="space-y-1 text-right">
                         <div className="text-[8px] font-black text-zinc-600 tracking-widest uppercase mb-1">Model</div>
-                        <div className="text-[10px] font-mono text-white/40 uppercase tracking-wider">{aiResult?.model || 'Llama-3.3-70B'}</div>
+                        <div className="text-[10px] font-mono text-indigo-400/80 uppercase tracking-wider">{aiResult?.model || 'Llama-3.3-70B'}</div>
                       </div>
                     </div>
                   </motion.div>

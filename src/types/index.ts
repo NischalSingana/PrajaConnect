@@ -23,7 +23,8 @@ export interface Politician extends User {
 export type IssueCategory =
   | 'Infrastructure' | 'Sanitation' | 'Safety' | 'General'
   | 'Roads' | 'Water' | 'Electricity' | 'Environment'
-  | 'Transport' | 'Parks' | 'Housing' | 'Education' | 'Health';
+  | 'Transport' | 'Parks' | 'Housing' | 'Education' | 'Health'
+  | 'Public Nuisance' | 'Animal Control' | 'Noise Complaint' | 'Pollution' | 'City Planning';
 export type IssuePriority = 'Low' | 'Medium' | 'High' | 'Critical';
 export type IssueStatus = 'Pending' | 'In Progress' | 'Resolved' | 'Escalated';
 export type EscalationLevel = 'Normal' | 'Level 1' | 'Level 2' | 'Critical';

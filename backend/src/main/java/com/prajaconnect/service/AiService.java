@@ -21,7 +21,7 @@ public class AiService {
 
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-    private static final String SYSTEM_PROMPT = "You are a civic issue analyzer for PrajaConnect. Analyze the given title and description of a civic issue. Categorize it into one of: 'Infrastructure', 'Sanitation', 'Safety', or 'General'. Assign a priority: 'Low', 'Medium', 'High', or 'Critical'. Provide a confidence score (0-100). Return ONLY a JSON object with keys: category, priority, confidence.";
+    private static final String SYSTEM_PROMPT = "You are a civic issue analyzer for PrajaConnect. Analyze the given title and description of a civic issue. Categorize it into one of: 'Infrastructure', 'Sanitation', 'Safety', 'General', 'Roads', 'Water', 'Electricity', 'Environment', 'Transport', 'Parks', 'Housing', 'Education', 'Health', 'Public Nuisance', 'Animal Control', 'Noise Complaint', 'Pollution', or 'City Planning'. Assign a priority: 'Low', 'Medium', 'High', or 'Critical'. Provide a confidence score (0-100). Return ONLY a JSON object with keys: category, priority, confidence.";
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();

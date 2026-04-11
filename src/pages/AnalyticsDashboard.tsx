@@ -71,15 +71,6 @@ export function AnalyticsDashboard() {
       if (i.status === 'Resolved') monthMap[m].resolved++;
     });
     const ordered = MONTHS.filter(m => monthMap[m]).map(m => ({ name: m, ...monthMap[m] }));
-    // if no real data, show demo
-    if (ordered.length < 2) return [
-      { name: 'Sep', reported: 24, resolved: 18 },
-      { name: 'Oct', reported: 38, resolved: 27 },
-      { name: 'Nov', reported: 45, resolved: 36 },
-      { name: 'Dec', reported: 32, resolved: 40 },
-      { name: 'Jan', reported: 56, resolved: 48 },
-      { name: 'Feb', reported: 68, resolved: 61 },
-    ];
     return ordered;
   }, [issues]);
 
@@ -142,28 +133,32 @@ export function AnalyticsDashboard() {
               </div>
               <Activity className="h-5 w-5 text-indigo-500/40" />
             </div>
-            <div className="h-[280px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trendData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="gradReported" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff04" />
-                  <XAxis dataKey="name" stroke="#444" fontSize={10} fontWeight={700} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#444" fontSize={10} fontWeight={700} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: '#0a0a0f', border: '1px solid #1f1f2e', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }} itemStyle={{ fontWeight: 700, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="reported" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#gradReported)" name="Reported" />
-                  <Area type="monotone" dataKey="resolved" stroke="#0ea5e9" strokeWidth={2.5} fillOpacity={1} fill="url(#gradResolved)" name="Resolved" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            {trendData.length === 0 ? (
+              <div className="h-[280px] flex items-center justify-center text-zinc-700 text-sm font-bold">Insufficient data for trends</div>
+            ) : (
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trendData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gradResolved" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="gradReported" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff04" />
+                    <XAxis dataKey="name" stroke="#444" fontSize={10} fontWeight={700} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#444" fontSize={10} fontWeight={700} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0a0a0f', border: '1px solid #1f1f2e', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.8)' }} itemStyle={{ fontWeight: 700, fontSize: 12 }} />
+                    <Area type="monotone" dataKey="reported" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#gradReported)" name="Reported" />
+                    <Area type="monotone" dataKey="resolved" stroke="#0ea5e9" strokeWidth={2.5} fillOpacity={1} fill="url(#gradResolved)" name="Resolved" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
         </motion.div>
 

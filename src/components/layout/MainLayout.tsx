@@ -159,15 +159,18 @@ export function MainLayout() {
         <Outlet />
       </main>
       
-      <footer className="border-t border-white/[0.03] bg-[#020202] py-24">
-        <div className="container mx-auto px-6">
+      <footer className="relative border-t border-white/[0.03] bg-[#020202] py-24 overflow-hidden">
+        {/* Glow Effects */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none" />
+        
+        <div className="container relative z-10 mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-12 mb-20">
             <div className="md:col-span-2 space-y-8">
-              <Link to="/" className="flex items-center space-x-3">
-                <div className="h-14 w-14 flex items-center justify-center">
-                  <img src="/logo.png" alt="PrajaConnect Logo" className="h-12 w-12 object-contain mix-blend-screen" />
+              <Link to="/" className="flex items-center space-x-3 group w-fit">
+                <div className="h-14 w-14 flex items-center justify-center bg-white/[0.02] border border-white/[0.05] rounded-2xl group-hover:scale-110 group-hover:border-indigo-500/30 transition-all duration-500">
+                  <img src="/logo.png" alt="PrajaConnect Logo" className="h-10 w-10 object-contain mix-blend-screen" />
                 </div>
-                <span className="text-3xl font-black text-white tracking-tighter">PrajaConnect</span>
+                <span className="text-3xl font-black text-white tracking-tighter group-hover:text-indigo-400 transition-colors duration-500">PrajaConnect</span>
               </Link>
               <p className="text-zinc-500 max-w-sm text-base font-medium leading-relaxed">
                 Empowering communities through transparent, AI-driven urban governance and swift infrastructure resolution.
@@ -177,19 +180,19 @@ export function MainLayout() {
             <div className="space-y-6">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Platform</h4>
               <ul className="space-y-4">
-                <li><Link to="/issues" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Public Feed</Link></li>
-                <li><Link to="/petitions" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Petitions</Link></li>
-                <li><Link to="/leaderboard" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Leaderboard</Link></li>
-                <li><Link to="/register" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Issue Reporting</Link></li>
+                <li><Link to="/issues" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Public Feed</Link></li>
+                <li><Link to="/petitions" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Petitions</Link></li>
+                <li><Link to="/leaderboard" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Leaderboard</Link></li>
+                <li><Link to="/dashboard" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Issue Reporting</Link></li>
               </ul>
             </div>
 
             <div className="space-y-6">
               <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Resources</h4>
               <ul className="space-y-4">
-                <li><Link to="/about" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Our Vision</Link></li>
-                <li><Link to="/terms" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link to="/privacy" className="text-sm font-medium text-zinc-500 hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/about" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Our Vision</Link></li>
+                <li><Link to="/terms" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="text-sm font-bold text-zinc-500 hover:text-indigo-400 hover:translate-x-1 transition-all inline-block">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
