@@ -88,7 +88,7 @@ export function AdminDashboard() {
   const loadUsers = useCallback(async () => {
     setLoadingUsers(true);
     const data = await fetchUsers();
-    setDbUsers(data);
+    setDbUsers(data as DBUser[]);
     setLoadingUsers(false);
   }, [fetchUsers]);
 
