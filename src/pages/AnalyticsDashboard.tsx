@@ -245,7 +245,7 @@ export function AnalyticsDashboard() {
                   const max = locationData[0]?.count || 1;
                   const pct = (ward.count / max) * 100;
                   return (
-                    <div key={ward.ward} className="space-y-2">
+                    <div key={`${ward.ward}-${i}`} className="space-y-2">
                       <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                         <span className="text-zinc-500 truncate max-w-[70%]">{ward.ward}</span>
                         <span className="text-zinc-600 shrink-0 ml-2">{ward.count} issues</span>

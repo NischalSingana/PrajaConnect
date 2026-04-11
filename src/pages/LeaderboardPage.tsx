@@ -175,13 +175,17 @@ export function LeaderboardPage() {
         )}
 
         {/* Rest of the list */}
-        {tab === 'citizens' && citizenRankings.length === 0 ? (
+        {(tab === 'citizens' && citizenRankings.length === 0) || (tab === 'areas' && areaRankings.length === 0) ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="py-24 rounded-[2rem] border border-dashed border-white/[0.05] flex flex-col items-center gap-3"
           >
-            <Award className="h-12 w-12 text-zinc-800" />
+            {tab === 'citizens' ? <Award className="h-12 w-12 text-zinc-800" /> : <Activity className="h-12 w-12 text-zinc-800" />}
             <p className="text-zinc-600 font-bold uppercase tracking-widest text-sm">No data yet</p>
-            <p className="text-zinc-700 text-xs text-center max-w-xs">Start reporting issues to appear on the leaderboard.</p>
+            <p className="text-zinc-700 text-xs text-center max-w-xs">
+              {tab === 'citizens' 
+                ? 'Start reporting issues to appear on the leaderboard.' 
+                : 'No hotspot areas have been logged yet.'}
+            </p>
           </motion.div>
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
