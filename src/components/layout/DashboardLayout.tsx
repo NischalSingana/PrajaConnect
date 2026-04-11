@@ -34,7 +34,7 @@ export function DashboardLayout() {
   const { signOut } = useClerk();
   const { notifications, user: storeUser } = useStore();
 
-  const role = (user?.publicMetadata?.role as string) || 'citizen';
+  const role = storeUser?.role || (user?.publicMetadata?.role as string) || 'citizen';
   const roleStyle = ROLE_COLORS[role] ?? ROLE_COLORS.citizen;
   const unreadCount = notifications.filter(n => !n.isRead).length;
 

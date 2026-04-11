@@ -1,10 +1,10 @@
 import { motion, Variants } from 'framer-motion';
 import { useLocalStore } from '@/hooks/useLocalStore';
 import { MapPin, Activity, TrendingUp, AlertCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Issue } from '@/types';
 import { cn } from '@/lib/utils';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -17,9 +17,17 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
-// Initial map view: Centered mostly on India bounds
+// Fallback initial map view: Centered mostly on India bounds if no data
 const MAP_CENTER: [number, number] = [20.5937, 78.9629];
 const MAP_ZOOM = 4;
+
+function AutoFitBounds({ bounds }: { bounds: L.LatLngBoundsExpression }) {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds) map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+  }, [map, bounds]);
+  return null;
+}
 
 const STATUS_COLOR: Record<string, string> = {
   Resolved: 'bg-emerald-500',
@@ -52,6 +60,16 @@ export function HeatmapPage() {
       iconAnchor: [8, 8],
     });
   };
+
+  const dynamicBounds = useMemo(() => {
+    if (positioned.length === 0) return null;
+    const lats = positioned.map(i => i.lat!);
+    const lngs = positioned.map(i => i.lng!);
+    return L.latLngBounds(
+      [Math.min(...lats), Math.min(...lngs)],
+      [Math.max(...lats), Math.max(...lngs)]
+    );
+  }, [positioned]);
 
   const byLocation = useMemo(() => {
     const map: Record<string, Issue[]> = {};
@@ -121,13 +139,16 @@ export function HeatmapPage() {
               <MapContainer 
                 center={MAP_CENTER} 
                 zoom={MAP_ZOOM} 
-                scrollWheelZoom={false}
+                scrollWheelZoom={true}
+                zoomControl={false}
                 className="h-full w-full absolute inset-0 !bg-[#020202]"
               >
+                <ZoomControl position="bottomright" />
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                 />
+                {dynamicBounds && <AutoFitBounds bounds={dynamicBounds} />}
                 
                 {positioned.map(issue => (
                   <Marker 

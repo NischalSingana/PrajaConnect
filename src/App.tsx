@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { ThemeProvider } from './context/ThemeContext';
-import { StoreProvider } from './context/StoreContext';
+import { StoreProvider, useStore } from './context/StoreContext';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // Layouts
@@ -36,7 +36,8 @@ import { NotFoundPage } from './pages/NotFoundPage';
 
 function DashboardIndexRedirect() {
   const { user } = useUser();
-  const role = (user?.publicMetadata?.role as string) || 'citizen';
+  const { user: storeUser } = useStore();
+  const role = storeUser?.role || (user?.publicMetadata?.role as string) || 'citizen';
   return <Navigate to={`/dashboard/${role}`} replace />;
 }
 
