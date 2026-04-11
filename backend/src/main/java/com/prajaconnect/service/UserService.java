@@ -79,22 +79,24 @@ public class UserService {
     }
 
     public User syncUser(String userId, String email, String name, String avatar, String role) {
-        User user = userRepository.findById(userId).orElse(new User());
+        Optional<User> existing = userRepository.findById(userId);
+        boolean isNew = existing.isEmpty();
+        User user = existing.orElse(new User());
+
         user.setId(userId);
         if (name   != null) user.setName(name);
         if (email  != null) user.setEmail(email);
         if (avatar != null) user.setAvatar(avatar);
-        
-        if (role != null && !role.equals(user.getRole())) {
-            user.setRole(role);
-            try { clerkService.updateUserMetadata(userId, Map.of("role", role)); }
-            catch (Exception ignored) {}
-        } else if (user.getRole() == null) {
-            user.setRole("citizen");
-            try { clerkService.updateUserMetadata(userId, Map.of("role", "citizen")); }
+
+        // Only set role for NEW users (first signup).
+        // Existing users keep their current DB role; use updateRole for changes.
+        if (isNew) {
+            String finalRole = (role != null && !role.isBlank()) ? role : "citizen";
+            user.setRole(finalRole);
+            try { clerkService.updateUserMetadata(userId, Map.of("role", finalRole)); }
             catch (Exception ignored) {}
         }
-        
+
         userRepository.save(user);
         return user;
     }

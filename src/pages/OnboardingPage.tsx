@@ -19,24 +19,29 @@ export function OnboardingPage() {
       if (!isLoaded || !user) return;
 
       try {
-        // First, check if the user already has a role in their metadata
-        const existingRole = user.publicMetadata.role as string;
+        const token = await getToken();
         const pendingRole = localStorage.getItem('pending_role');
 
-        // If they have an existing role and no pending role, just redirect
-        if (existingRole && !pendingRole) {
+        // 1) Check if user already exists in the database
+        const meRes = await fetch(`${API_URL}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (meRes.ok) {
+          // Returning user — use their stored DB role, skip sync entirely
+          const dbUser = await meRes.json();
+          const dbRole = dbUser.role || 'citizen';
+          localStorage.removeItem('pending_role');
           setStatus('completed');
           setTimeout(() => {
-            window.location.href = `/dashboard/${existingRole}`;
+            window.location.href = `/dashboard/${dbRole}`;
           }, 1500);
           return;
         }
 
-        const roleToSync = pendingRole || existingRole || 'citizen';
-        const apiUrl = `${API_URL}/api/sync-user`;
-
-        const token = await getToken();
-        const response = await fetch(apiUrl, {
+        // 2) New user — sync profile with the role they selected during signup
+        const roleToSync = pendingRole || 'citizen';
+        const response = await fetch(`${API_URL}/api/sync-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,15 +61,15 @@ export function OnboardingPage() {
         }
 
         await response.json();
-        
-        // Clear pending role
+
+        // Clear pending role after successful sync
         localStorage.removeItem('pending_role');
-        
+
         setStatus('completed');
-        
-        // Wait a beat for the animation
+
+        // Wait a beat for the animation, then redirect
         setTimeout(async () => {
-          await user.reload();
+          try { await user.reload(); } catch {}
           window.location.href = `/dashboard/${roleToSync}`;
         }, 2000);
       } catch (err) {
