@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev-server\" \"vite\"",
-    "dev-server": "set -a && . ./.env && set +a && cd backend && mvn spring-boot:run -q",
-    "start": "set -a && . ./.env && set +a && cd backend && mvn spring-boot:run -q",
+    "dev-server": "export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebrew/opt/openjdk@21) && export PATH=\"$JAVA_HOME/bin:$HOME/Downloads/apache-maven-3.9.12/bin:$PATH\" && set -a && . ./.env && set +a && cd backend && mvn spring-boot:run -q",
+    "start": "export JAVA_HOME=$(/usr/libexec/java_home -v 21 2>/dev/null || echo /opt/homebrew/opt/openjdk@21) && export PATH=\"$JAVA_HOME/bin:$HOME/Downloads/apache-maven-3.9.12/bin:$PATH\" && set -a && . ./.env && set +a && cd backend && mvn spring-boot:run -q",
     "build": "tsc -b && vite build",
     "build:backend": "cd backend && mvn package -q -DskipTests",
     "lint": "eslint .",
