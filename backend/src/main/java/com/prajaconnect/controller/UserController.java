@@ -53,8 +53,8 @@ public class UserController {
                                        @RequestBody Map<String, String> body) {
         String userId = jwt.getSubject();
         try {
-            userService.syncUser(userId, body.get("email"), body.get("name"), body.get("avatar"), body.get("role"));
-            return ResponseEntity.ok(Map.of("success", true));
+            var saved = userService.syncUser(userId, body.get("email"), body.get("name"), body.get("avatar"), body.get("role"));
+            return ResponseEntity.ok(saved);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(Map.of("error", "Failed to sync user", "details", e.getMessage()));
         }

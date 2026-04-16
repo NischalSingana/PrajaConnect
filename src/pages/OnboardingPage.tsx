@@ -27,11 +27,10 @@ export function OnboardingPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (meRes.ok) {
-          // Returning user — use their stored DB role, skip sync entirely
+        if (meRes.ok && !pendingRole) {
+          // Returning user with no new role selection — use their stored DB role
           const dbUser = await meRes.json();
           const dbRole = dbUser.role || 'citizen';
-          localStorage.removeItem('pending_role');
           setStatus('completed');
           setTimeout(() => {
             window.location.href = `/dashboard/${dbRole}`;
@@ -39,7 +38,8 @@ export function OnboardingPage() {
           return;
         }
 
-        // 2) New user — sync profile with the role they selected during signup
+        // 2) Either new user OR existing user who just selected a new role
+        //    Call sync-user to create/update the user with the selected role
         const roleToSync = pendingRole || 'citizen';
         const response = await fetch(`${API_URL}/api/sync-user`, {
           method: 'POST',
@@ -60,7 +60,9 @@ export function OnboardingPage() {
           throw new Error(errorData.details || errorData.error || 'Failed to sync user data');
         }
 
-        await response.json();
+        // Use the role from the server response (source of truth)
+        const savedUser = await response.json();
+        const confirmedRole = savedUser.role || roleToSync;
 
         // Clear pending role after successful sync
         localStorage.removeItem('pending_role');
@@ -70,7 +72,7 @@ export function OnboardingPage() {
         // Wait a beat for the animation, then redirect
         setTimeout(async () => {
           try { await user.reload(); } catch { /* reload is best-effort */ }
-          window.location.href = `/dashboard/${roleToSync}`;
+          window.location.href = `/dashboard/${confirmedRole}`;
         }, 2000);
       } catch (err) {
         console.error('Onboarding sync error:', err);

@@ -79,26 +79,27 @@ public class UserService {
     }
 
     public User syncUser(String userId, String email, String name, String avatar, String role) {
-        Optional<User> existing = userRepository.findById(userId);
-        boolean isNew = existing.isEmpty();
-        User user = existing.orElse(new User());
+        User user = userRepository.findById(userId).orElse(new User());
 
         user.setId(userId);
         if (name   != null) user.setName(name);
         if (email  != null) user.setEmail(email);
         if (avatar != null) user.setAvatar(avatar);
 
-        // Only set role for NEW users (first signup).
-        // Existing users keep their current DB role; use updateRole for changes.
-        if (isNew) {
-            String finalRole = (role != null && !role.isBlank()) ? role : "citizen";
-            user.setRole(finalRole);
-            try { clerkService.updateUserMetadata(userId, Map.of("role", finalRole)); }
-            catch (Exception ignored) {}
+        // Set role: use provided role, or keep existing, or default to citizen
+        if (role != null && !role.isBlank()) {
+            user.setRole(role);
+        } else if (user.getRole() == null || user.getRole().isBlank()) {
+            user.setRole("citizen");
         }
 
-        userRepository.save(user);
-        return user;
+        User saved = userRepository.save(user);
+
+        // Sync role to Clerk metadata (best-effort)
+        try { clerkService.updateUserMetadata(userId, Map.of("role", saved.getRole())); }
+        catch (Exception ignored) {}
+
+        return saved;
     }
 
     public String getRoleOrDefault(String userId) {
